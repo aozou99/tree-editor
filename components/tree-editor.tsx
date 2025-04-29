@@ -1,32 +1,19 @@
 'use client';
 
 import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
 import type React from 'react';
-
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-    Plus,
-    Edit,
-    Trash,
-    Save,
-    X,
-    Info,
-    Search,
-    Settings,
-    HelpCircle,
-    ChevronRight,
-    BookTemplate,
-    ChevronDown,
-    Download,
-    Upload,
-    RotateCcw,
-} from 'lucide-react';
+import { Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { SearchResults } from './search-results';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// ツリーエディターのコンポーネントとフックをインポート
+import { TreeNodeComponent } from './tree-editor/components/tree-node';
+import { TreeHeader } from './tree-editor/components/tree-header';
+import { useTreeDragDrop } from './tree-editor/hooks/use-tree-drag-drop';
 
 // インポート部分
 import { validateImportData, createExportData } from '@/utils/tree-data-utils';
@@ -35,7 +22,6 @@ import { getSampleById, organizationSample, type SampleType, allSamples } from '
 import { WorkspaceManager } from './workspace-manager';
 import type { Workspace } from '@/utils/workspace-utils';
 import { loadWorkspaceList, loadWorkspace, createWorkspace, saveWorkspace } from '@/utils/workspace-utils';
-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 
 // 追加のインポート
@@ -71,71 +57,13 @@ import {
 
 // 検索機能のカスタムフックをインポート
 import { useSearch } from './tree-editor/hooks/use-search';
-import { isNodeInHighlightedPath, hasHighlightedDescendant, getNodeTypeInfo } from './tree-editor/utils/search-utils';
 
 // 型定義
-export interface CustomFieldDefinition {
-    id: string;
-    name: string;
-    type: 'text' | 'textarea' | 'link' | 'youtube' | 'image' | 'audio';
-    required: boolean;
-}
-
-export interface NodeType {
-    id: string;
-    name: string;
-    icon: string;
-    fieldDefinitions: CustomFieldDefinition[];
-}
-
-export interface CustomField {
-    id: string;
-    name: string;
-    value: string;
-    type: 'text' | 'textarea' | 'link' | 'youtube' | 'image' | 'audio';
-    definitionId?: string;
-}
-
-export interface TreeNode {
-    id: string;
-    name: string;
-    children: TreeNode[];
-    isExpanded?: boolean;
-    icon?: string;
-    thumbnail?: string;
-    customFields?: CustomField[];
-    nodeType?: string; // ノードタイプのID
-}
-
-// 検索結果の型定義
-export interface SearchResult {
-    node: TreeNode;
-    path: TreeNode[];
-    matchField: string;
-    matchValue: string;
-}
+import { CustomFieldDefinition, NodeType, CustomField, TreeNode } from './tree-editor/types';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;
 const initialTree = organizationSample.tree;
-
-// 画像URLかどうかを判定する関数を修正
-export const isImageUrl = (url?: string) => {
-    return url?.startsWith && url?.startsWith('http');
-};
-
-// Base64画像かどうかを判定する関数
-export const isBase64Image = (str?: string) => {
-    return (
-        str?.startsWith &&
-        (str?.startsWith('data:image/') || str?.match(/^data:image\/(jpeg|png|gif|webp|svg\+xml);base64,/))
-    );
-};
-
-// Base64音声かどうかを判定する関数
-export const isBase64Audio = (str?: string) => {
-    return str?.startsWith && str?.startsWith('data:audio/');
-};
 
 function TreeEditor() {
     const [tree, setTree] = useState<TreeNode[]>(initialTree);
@@ -171,16 +99,27 @@ function TreeEditor() {
     const [isNodeCreateModalOpen, setIsNodeCreateModalOpen] = useState<boolean>(false);
     const [addingToParentId, setAddingToParentId] = useState<string | undefined>(undefined);
 
-    // ドラッグ＆ドロップ用の状態
-    const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
-    const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null);
-    const [dragPosition, setDragPosition] = useState<'before' | 'after' | 'inside' | null>(null);
-    const [isDraggingOverRoot, setIsDraggingOverRoot] = useState<boolean>(false);
-
+    // サンプル選択モーダル
     const [isSampleSelectorOpen, setIsSampleSelectorOpen] = useState<boolean>(false);
 
     // i18n
     const { t } = useI18n();
+
+    // ドラッグ＆ドロップのカスタムフックを使用
+    const {
+        draggedNodeId,
+        dragOverNodeId,
+        dragPosition,
+        isDraggingOverRoot,
+        handleDragStart,
+        handleDragEnd,
+        handleDragOver,
+        handleDragLeave,
+        handleDrop,
+        handleRootDragOver,
+        handleRootDragLeave,
+        handleRootDrop,
+    } = useTreeDragDrop(tree, setTree);
 
     // 検索機能のカスタムフックを使用
     const {
@@ -486,41 +425,6 @@ function TreeEditor() {
         }
     };
 
-    // 必要な関数を定義
-    const processNodeForBeforeInsertion = (node: TreeNode, targetNodeId: string, sourceNode: TreeNode): TreeNode => {
-        if (node.children.length > 0) {
-            const newChildren = node.children.reduce<TreeNode[]>((acc, child) => {
-                if (child.id === targetNodeId) {
-                    acc.push(sourceNode, child); // ディープコピーではなく元のノードを使用
-                } else {
-                    acc.push(processNodeForBeforeInsertion(child, targetNodeId, sourceNode));
-                }
-                return acc;
-            }, []);
-
-            return { ...node, children: newChildren };
-        }
-
-        return node;
-    };
-
-    const processNodeForAfterInsertion = (node: TreeNode, targetNodeId: string, sourceNode: TreeNode): TreeNode => {
-        if (node.children.length > 0) {
-            const newChildren = node.children.reduce<TreeNode[]>((acc, child) => {
-                if (child.id === targetNodeId) {
-                    acc.push(child, sourceNode); // ディープコピーではなく元のノードを使用
-                } else {
-                    acc.push(processNodeForAfterInsertion(child, targetNodeId, sourceNode));
-                }
-                return acc;
-            }, []);
-
-            return { ...node, children: newChildren };
-        }
-
-        return node;
-    };
-
     // ノードの展開/折りたたみを切り替える
     const toggleExpand = (nodeId: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -574,24 +478,24 @@ function TreeEditor() {
     // ノードを削除
     const deleteNode = (nodeId: string, e: React.MouseEvent) => {
         e.stopPropagation();
+
+        const removeNode = (nodeId: string, nodes: TreeNode[]): TreeNode[] => {
+            // ルートレベルでノードを検索して削除
+            const filteredNodes = nodes.filter((node) => node.id !== nodeId);
+
+            // 子ノードを再帰的に検索
+            return filteredNodes.map((node) => {
+                if (node.children && node.children.length > 0) {
+                    return {
+                        ...node,
+                        children: removeNode(nodeId, node.children),
+                    };
+                }
+                return node;
+            });
+        };
+
         setTree(removeNode(nodeId, tree));
-    };
-
-    // ノードを削除する関数
-    const removeNode = (nodeId: string, nodes: TreeNode[]): TreeNode[] => {
-        // ルートレベルでノードを検索して削除
-        const filteredNodes = nodes.filter((node) => node.id !== nodeId);
-
-        // 子ノードを再帰的に検索
-        return filteredNodes.map((node) => {
-            if (node.children && node.children.length > 0) {
-                return {
-                    ...node,
-                    children: removeNode(nodeId, node.children),
-                };
-            }
-            return node;
-        });
     };
 
     // ノード名の編集を開始
@@ -618,6 +522,11 @@ function TreeEditor() {
             });
         };
         setTree(updateNode(tree));
+        setEditingNodeId(null);
+    };
+
+    // 編集のキャンセル
+    const cancelEditing = () => {
         setEditingNodeId(null);
     };
 
@@ -652,599 +561,25 @@ function TreeEditor() {
         setSelectedNode(updatedNode);
     };
 
-    // ノードのアイコンを取得する関数
-    const getNodeIcon = (node: TreeNode): string | undefined => {
-        // ノード自身のアイコンが設定されている場合はそれを使用
-        if (node.icon) {
-            return node.icon;
-        }
-
-        // ノードタイプが設定されている場合はノードタイプのアイコンを使用
-        if (node.nodeType) {
-            const nodeType = nodeTypes.find((type) => type.id === node.nodeType);
-            if (nodeType) {
-                return nodeType.icon;
-            }
-        }
-
-        // どちらも設定されていない場合は undefined を返す
-        return undefined;
-    };
-
-    // ドラッグ開始時の処理
-    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, nodeId: string) => {
-        e.stopPropagation();
-        setDraggedNodeId(nodeId);
-
-        // ドラッグ中のノードのデータを設定
-        e.dataTransfer.setData('application/json', JSON.stringify({ nodeId }));
-
-        // ドラッグ中のゴーストイメージをカスタマイズ
-        const dragImage = document.createElement('div');
-        dragImage.className = 'bg-primary/10 border border-primary rounded px-2 py-1 text-sm';
-
-        // ドラッグ中のノードの名前を取得
-        const findNodeName = (nodes: TreeNode[], id: string): string => {
-            for (const node of nodes) {
-                if (node.id === id) return node.name;
-                if (node.children.length > 0) {
-                    const name = findNodeName(node.children, id);
-                    if (name) return name;
-                }
-            }
-            return 'ノード';
-        };
-
-        dragImage.textContent = findNodeName(tree, nodeId);
-        document.body.appendChild(dragImage);
-        dragImage.style.position = 'absolute';
-        dragImage.style.top = '-1000px';
-        e.dataTransfer.setDragImage(dragImage, 0, 0);
-
-        // クリーンアップ用にタイムアウトを設定
-        setTimeout(() => {
-            document.body.removeChild(dragImage);
-        }, 0);
-    };
-
-    // ドラッグ終了時の処理
-    const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
-        e.stopPropagation();
-        setDraggedNodeId(null);
-        setDragOverNodeId(null);
-        setDragPosition(null);
-        setIsDraggingOverRoot(false);
-    };
-
-    // ドラッグオーバー時の処理
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>, nodeId: string) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (draggedNodeId === nodeId) return; // 自分自身へのドラッグは無視
-
-        // ドラッグ中のノードが対象ノードの子孫かチェック
-        const isDescendant = (parentId: string, childId: string): boolean => {
-            const findNode = (nodes: TreeNode[], id: string): TreeNode | null => {
-                for (const node of nodes) {
-                    if (node.id === id) return node;
-                    if (node.children.length > 0) {
-                        const found = findNode(node.children, id);
-                        if (found) return found;
-                    }
-                }
-                return null;
-            };
-
-            const parent = findNode(tree, parentId);
-            if (!parent) return false;
-
-            const checkChildren = (nodes: TreeNode[]): boolean => {
-                for (const node of nodes) {
-                    if (node.id === childId) return true;
-                    if (node.children.length > 0 && checkChildren(node.children)) return true;
-                }
-                return false;
-            };
-
-            return checkChildren(parent.children);
-        };
-
-        // 子孫へのドラッグは無視
-        if (isDescendant(nodeId, draggedNodeId!)) return;
-
-        setDragOverNodeId(nodeId);
-        setIsDraggingOverRoot(false);
-
-        // マウス位置に基づいてドロップ  return
-
-        setDragOverNodeId(nodeId);
-        setIsDraggingOverRoot(false);
-
-        // マウス位置に基づいてドロップ位置を決定
-        const rect = e.currentTarget.getBoundingClientRect();
-        const y = e.clientY - rect.top;
-
-        if (y < rect.height * 0.25) {
-            setDragPosition('before');
-        } else if (y > rect.height * 0.75) {
-            setDragPosition('after');
-        } else {
-            setDragPosition('inside');
-        }
-    };
-
-    // ドラッグリーブ時の処理
-    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragOverNodeId(null);
-        setDragPosition(null);
-    };
-
-    // ルートエリアへのドラッグオーバー
-    const handleRootDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!draggedNodeId) return;
-
-        setIsDraggingOverRoot(true);
-        setDragOverNodeId(null);
-        setDragPosition(null);
-    };
-
-    // ルートエリアからのドラッグリーブ
-    const handleRootDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingOverRoot(false);
-    };
-
-    // ノードを見つける関数
-    const findNode = (nodeId: string, nodes: TreeNode[] = tree): { node: TreeNode | null; path: string[] } => {
-        const search = (
-            currentNodes: TreeNode[],
-            currentPath: string[] = [],
-        ): { node: TreeNode | null; path: string[] } => {
-            for (const node of currentNodes) {
-                if (node.id === nodeId) {
-                    return { node, path: [...currentPath, node.id] };
-                }
-
-                if (node.children.length > 0) {
-                    const result = search(node.children, [...currentPath, node.id]);
-                    if (result.node) {
-                        return result;
-                    }
-                }
-            }
-
-            return { node: null, path: [] };
-        };
-
-        return search(nodes);
-    };
-
-    // ドロップ時の処理
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetNodeId: string) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!draggedNodeId || draggedNodeId === targetNodeId) {
-            // ドラッグされていないか、自分自身へのドロップは無視
-            return;
-        }
-
-        try {
-            // ドラッグされたノードを見つける
-            const { node: sourceNode, path: sourcePath } = findNode(draggedNodeId);
-
-            if (!sourceNode) {
-                console.error('ドラッグされたノードが見つかりません');
-                return;
-            }
-
-            // ターゲットノードが子孫かチェック
-            const { path: targetPath } = findNode(targetNodeId);
-            if (targetPath.includes(draggedNodeId)) {
-                console.error('子孫ノードへのドロップはできません');
-                return;
-            }
-
-            // 現在のツリーからソースノードを削除
-            const treeWithoutSource = removeNode(draggedNodeId, [...tree]);
-
-            // ドロップ位置に基づいてノードを挿入
-            let newTree: TreeNode[];
-
-            if (dragPosition === 'inside') {
-                // 子ノードとして追加
-                newTree = treeWithoutSource.map((node) => {
-                    if (node.id === targetNodeId) {
-                        return {
-                            ...node,
-                            isExpanded: true, // 自動的に展開
-                            children: [...node.children, sourceNode], // ディープコピーではなく元のノードを使用
-                        };
-                    }
-
-                    if (node.children.length > 0) {
-                        const newChildren = node.children.map((child) => {
-                            if (child.id === targetNodeId) {
-                                return {
-                                    ...child,
-                                    isExpanded: true, // 自動的に展開
-                                    children: [...child.children, sourceNode], // ディープコピーではなく元のノードを使用
-                                };
-                            }
-                            return child;
-                        });
-
-                        // 子ノードに変更があったかチェック
-                        const hasChanges = newChildren.some((child, index) => child !== node.children[index]);
-
-                        if (hasChanges) {
-                            return { ...node, children: newChildren };
-                        }
-                    }
-
-                    return node;
-                });
-            } else if (dragPosition === 'before') {
-                // ターゲットノードの前に挿入
-                newTree = [];
-
-                for (const node of treeWithoutSource) {
-                    if (node.id === targetNodeId) {
-                        // ルートレベルでの前挿入
-                        newTree.push(sourceNode); // ディープコピーではなく元のノードを使用
-                        newTree.push(node);
-                    } else {
-                        // 子ノードでの前挿入を処理
-                        const processedNode = processNodeForBeforeInsertion(node, targetNodeId, sourceNode); // ディープコピーではなく元のノードを使用
-                        newTree.push(processedNode);
-                    }
-                }
-            } else {
-                // after
-                // ターゲットノードの後に挿入
-                newTree = [];
-
-                for (const node of treeWithoutSource) {
-                    if (node.id === targetNodeId) {
-                        // ルートレベルでの後挿入
-                        newTree.push(node);
-                        newTree.push(sourceNode); // ディープコピーではなく元のノードを使用
-                    } else {
-                        // 子ノードでの後挿入を処理
-                        const processedNode = processNodeForAfterInsertion(node, targetNodeId, sourceNode); // ディープコピーではなく元のノードを使用
-                        newTree.push(processedNode);
-                    }
-                }
-            }
-
-            setTree(newTree);
-
-            // リセット
-            setDraggedNodeId(null);
-            setDragOverNodeId(null);
-            setDragPosition(null);
-            setIsDraggingOverRoot(false);
-        } catch (error) {
-            console.error('ドロップ処理中にエラーが発生しました:', error);
-        }
-    };
-
-    // ルートレベルへのドロップ処理
-    const handleRootDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!draggedNodeId) return;
-
-        try {
-            // ドラッグされたノードを見つける
-            const { node: sourceNode } = findNode(draggedNodeId);
-
-            if (!sourceNode) {
-                console.error('ドラッグされたノードが見つかりません');
-                return;
-            }
-
-            // 現在のツリーからソースノードを削除
-            const treeWithoutSource = removeNode(draggedNodeId, [...tree]);
-
-            // ルートレベルに追加
-            setTree([...treeWithoutSource, sourceNode]); // ディープコピーではなく元のノードを使用
-
-            // リセット
-            setDraggedNodeId(null);
-            setDragOverNodeId(null);
-            setDragPosition(null);
-            setIsDraggingOverRoot(false);
-        } catch (error) {
-            console.error('ドロップ処理中にエラーが発生しました:', error);
-        }
-    };
-
-    // ツリーノードをレンダリング
-    const renderNode = (node: TreeNode, depth = 0) => {
-        const hasChildren = node.children.length > 0;
-        const isHighlighted = highlightedPath.has(node.id);
-        const nodeTypeInfo = getNodeTypeInfo(nodeTypes, node.nodeType);
-        const nodeIcon = getNodeIcon(node);
-
-        // フォーカスモードが有効で、このノードがハイライトパスに含まれていない場合は表示しない
-        if (focusMode && !isHighlighted) {
-            return null;
-        }
-
-        return (
-            <div
-                key={node.id}
-                className={cn(
-                    'select-none',
-                    draggedNodeId === node.id && 'opacity-50',
-                    dragOverNodeId === node.id && dragPosition === 'inside' && 'bg-primary/10 rounded-md',
-                )}
-                draggable
-                onDragStart={(e) => handleDragStart(e, node.id)}
-                onDragEnd={handleDragEnd}
-                onDragOver={(e) => handleDragOver(e, node.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, node.id)}
-            >
-                {dragOverNodeId === node.id && dragPosition === 'before' && (
-                    <div className='h-1 bg-primary rounded-full -mt-0.5 mb-1' />
-                )}
-
-                <div
-                    className={cn(
-                        'flex items-center py-1 px-2 rounded-md group cursor-pointer',
-                        depth > 0 && 'ml-6',
-                        isHighlighted ? 'bg-blue-100' : 'hover:bg-muted/50',
-                    )}
-                    onClick={() => handleNodeClick(node)}
-                >
-                    {hasChildren ? (
-                        <button onClick={(e) => toggleExpand(node.id, e)} className='mr-1 text-muted-foreground'>
-                            {node.isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </button>
-                    ) : (
-                        <div className='w-4 mr-1' />
-                    )}
-
-                    {editingNodeId === node.id ? (
-                        <div className='flex items-center flex-1' onClick={(e) => e.stopPropagation()}>
-                            <Input
-                                value={editingName}
-                                onChange={(e) => setEditingName(e.target.value)}
-                                className='h-7 py-1 mr-2'
-                                autoFocus
-                            />
-                            <Button size='icon' variant='ghost' onClick={saveNodeName} className='h-7 w-7'>
-                                <Save size={16} />
-                            </Button>
-                            <Button
-                                size='icon'
-                                variant='ghost'
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingNodeId(null);
-                                }}
-                                className='h-7 w-7'
-                            >
-                                <X size={16} />
-                            </Button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className='flex items-center flex-1'>
-                                <span className='flex-shrink-0 mr-2'>
-                                    {nodeIcon && (
-                                        <span
-                                            className={cn(
-                                                'flex items-center justify-center',
-                                                nodeIcon.length > 2 && !isImageUrl(nodeIcon) && !isBase64Image(nodeIcon)
-                                                    ? 'text-lg'
-                                                    : 'w-5 h-5',
-                                            )}
-                                        >
-                                            {isImageUrl(nodeIcon) || isBase64Image(nodeIcon) ? (
-                                                <img
-                                                    src={nodeIcon || '/placeholder.svg'}
-                                                    alt=''
-                                                    className='w-5 h-5 object-cover rounded-sm'
-                                                />
-                                            ) : (
-                                                <span className='text-2xl'>{nodeIcon}</span>
-                                            )}
-                                        </span>
-                                    )}
-                                </span>
-                                <span>{node.name}</span>
-                                {nodeTypeInfo && (
-                                    <span className='ml-2 text-xs px-2 py-0.5 bg-muted/50 rounded-full text-muted-foreground'>
-                                        {nodeTypeInfo.name}
-                                    </span>
-                                )}
-                                {node.customFields && node.customFields.length > 0 && (
-                                    <Info size={14} className='ml-2 text-muted-foreground' />
-                                )}
-                            </div>
-                            <div
-                                className='opacity-0 group-hover:opacity-100 flex'
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Button
-                                    size='icon'
-                                    variant='ghost'
-                                    onClick={(e) => openAddChildModal(node.id, e)}
-                                    className='h-7 w-7'
-                                >
-                                    <Plus size={16} />
-                                </Button>
-                                <Button
-                                    size='icon'
-                                    variant='ghost'
-                                    onClick={(e) => startEditing(node, e)}
-                                    className='h-7 w-7'
-                                >
-                                    <Edit size={16} />
-                                </Button>
-                                <Button
-                                    size='icon'
-                                    variant='ghost'
-                                    onClick={(e) => deleteNode(node.id, e)}
-                                    className='h-7 w-7'
-                                >
-                                    <Trash size={16} />
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                {dragOverNodeId === node.id && dragPosition === 'after' && (
-                    <div className='h-1 bg-primary rounded-full mt-1' />
-                )}
-
-                {hasChildren && node.isExpanded && (
-                    <div className='ml-4'>
-                        {node.children
-                            .map((childNode) => {
-                                // フォーカスモードが有効で、この子ノードがハイライトパスに含まれていない場合はスキップ
-                                if (
-                                    focusMode &&
-                                    !isNodeInHighlightedPath(childNode, highlightedPath) &&
-                                    !hasHighlightedDescendant(childNode, highlightedPath)
-                                ) {
-                                    return null;
-                                }
-                                return renderNode(childNode, depth + 1);
-                            })
-                            .filter(Boolean)}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    // ヘッダー部分にワークスペース管理とエクスポート/インポートボタンを追加
     return (
         <div className='border rounded-lg p-4'>
-            <div className='mb-4'>
-                {isEditingTitle ? (
-                    <div className='flex items-center w-full'>
-                        <Input
-                            value={treeTitle}
-                            onChange={(e) => setTreeTitle(e.target.value)}
-                            className='h-9 py-1 mr-2 text-xl font-semibold flex-1'
-                            autoFocus
-                        />
-                        <Button
-                            size='icon'
-                            variant='outline'
-                            onClick={() => setIsEditingTitle(false)}
-                            className='h-9 w-9'
-                        >
-                            <Save size={16} />
-                        </Button>
-                        <Button
-                            size='icon'
-                            variant='outline'
-                            onClick={() => {
-                                setIsEditingTitle(false);
-                                setTreeTitle('ツリー構造'); // Reset to default if canceled
-                            }}
-                            className='h-9 w-9 ml-2'
-                        >
-                            <X size={16} />
-                        </Button>
-                    </div>
-                ) : (
-                    <>
-                        <div className='flex flex-wrap items-center justify-between gap-2 mb-2'>
-                            <div className='flex items-center'>
-                                <h2
-                                    className='text-xl font-semibold cursor-pointer hover:text-primary flex items-center mr-2'
-                                    onClick={() => setIsEditingTitle(true)}
-                                >
-                                    {treeTitle}
-                                    <Edit size={14} className='ml-2 opacity-50' />
-                                </h2>
-                                {lastSaved && (
-                                    <span className='text-xs text-muted-foreground whitespace-nowrap'>
-                                        {t('common.lastSaved')}: {new Date(lastSaved).toLocaleTimeString()}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className='flex items-center gap-2'>
-                                <WorkspaceManager
-                                    activeWorkspaceId={activeWorkspaceId}
-                                    onWorkspaceChange={handleWorkspaceChange}
-                                    onCreateWorkspace={handleCreateWorkspace}
-                                />
-
-                                <LanguageSwitcher />
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant='outline' size='sm' className='h-9'>
-                                            <span>{t('header.file')}</span>
-                                            <ChevronDown size={14} className='ml-1' />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='end' className='w-56'>
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={exportTreeData}>
-                                                <Download size={16} className='mr-2' />
-                                                <span>{t('common.export')}</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={openFileSelector}>
-                                                <Upload size={16} className='mr-2' />
-                                                <span>{t('common.import')}</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setIsSampleSelectorOpen(true)}>
-                                                <BookTemplate size={16} className='mr-2' />
-                                                <span>{t('header.sampleSelection')}</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant='outline' size='sm' className='h-9'>
-                                            <span>{t('header.settings')}</span>
-                                            <ChevronDown size={14} className='ml-1' />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='end' className='w-56'>
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => setIsNodeTypeModalOpen(true)}>
-                                                <Settings size={16} className='mr-2' />
-                                                <span>{t('header.nodeTypeManagement')}</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setIsResetDialogOpen(true)}>
-                                                <RotateCcw size={16} className='mr-2' />
-                                                <span>{t('common.reset')}</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                <Button onClick={addRootNode} size='sm' className='h-9'>
-                                    <Plus size={16} className='mr-2' />
-                                    <span>{t('header.addRootNode')}</span>
-                                </Button>
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
+            {/* ヘッダー部分 */}
+            <TreeHeader
+                treeTitle={treeTitle}
+                isEditingTitle={isEditingTitle}
+                lastSaved={lastSaved}
+                activeWorkspaceId={activeWorkspaceId}
+                setTreeTitle={setTreeTitle}
+                setIsEditingTitle={setIsEditingTitle}
+                handleWorkspaceChange={handleWorkspaceChange}
+                handleCreateWorkspace={handleCreateWorkspace}
+                exportTreeData={exportTreeData}
+                openFileSelector={openFileSelector}
+                setIsSampleSelectorOpen={setIsSampleSelectorOpen}
+                setIsNodeTypeModalOpen={setIsNodeTypeModalOpen}
+                setIsResetDialogOpen={setIsResetDialogOpen}
+                addRootNode={addRootNode}
+            />
 
             {/* 検索機能 */}
             <div className='mb-4 relative'>
@@ -1349,6 +684,7 @@ function TreeEditor() {
                 )}
             </div>
 
+            {/* ツリーノードコンテナ */}
             <div
                 className={cn(
                     'space-y-1 transition-all duration-200 min-h-[200px] relative',
@@ -1364,7 +700,33 @@ function TreeEditor() {
                         <p className='text-primary/70 text-sm font-medium'>{t('tree.dropHere')}</p>
                     </div>
                 )}
-                {tree.map((node) => renderNode(node))}
+                {tree.map((node) => (
+                    <TreeNodeComponent
+                        key={node.id}
+                        node={node}
+                        nodeTypes={nodeTypes}
+                        highlightedPath={highlightedPath}
+                        focusMode={focusMode}
+                        editingNodeId={editingNodeId}
+                        editingName={editingName}
+                        draggedNodeId={draggedNodeId}
+                        dragOverNodeId={dragOverNodeId}
+                        dragPosition={dragPosition}
+                        onToggleExpand={toggleExpand}
+                        onAddChild={openAddChildModal}
+                        onStartEditing={startEditing}
+                        onSaveNodeName={saveNodeName}
+                        onCancelEditing={cancelEditing}
+                        onDeleteNode={deleteNode}
+                        onNodeClick={handleNodeClick}
+                        onSetEditingName={setEditingName}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    />
+                ))}
             </div>
 
             {/* 詳細モーダル */}
