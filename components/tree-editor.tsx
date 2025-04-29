@@ -198,8 +198,6 @@ function TreeEditor() {
         handleSelectSearchResult,
         handleOpenDetailModal: openDetailFromSearch,
         handleSearchKeyDown,
-        updateHighlightedPath,
-        setFocusMode,
     } = useSearch({ tree, nodeTypes });
 
     // 自動保存のためのデバウンス関数
@@ -995,7 +993,8 @@ function TreeEditor() {
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => handleDragOver(e, node.id)}
                 onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, node.id)}>
+                onDrop={(e) => handleDrop(e, node.id)}
+            >
                 {dragOverNodeId === node.id && dragPosition === 'before' && (
                     <div className='h-1 bg-primary rounded-full -mt-0.5 mb-1' />
                 )}
@@ -1006,7 +1005,8 @@ function TreeEditor() {
                         depth > 0 && 'ml-6',
                         isHighlighted ? 'bg-blue-100' : 'hover:bg-muted/50',
                     )}
-                    onClick={() => handleNodeClick(node)}>
+                    onClick={() => handleNodeClick(node)}
+                >
                     {hasChildren ? (
                         <button onClick={(e) => toggleExpand(node.id, e)} className='mr-1 text-muted-foreground'>
                             {node.isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -1033,7 +1033,8 @@ function TreeEditor() {
                                     e.stopPropagation();
                                     setEditingNodeId(null);
                                 }}
-                                className='h-7 w-7'>
+                                className='h-7 w-7'
+                            >
                                 <X size={16} />
                             </Button>
                         </div>
@@ -1048,7 +1049,8 @@ function TreeEditor() {
                                                 nodeIcon.length > 2 && !isImageUrl(nodeIcon) && !isBase64Image(nodeIcon)
                                                     ? 'text-lg'
                                                     : 'w-5 h-5',
-                                            )}>
+                                            )}
+                                        >
                                             {isImageUrl(nodeIcon) || isBase64Image(nodeIcon) ? (
                                                 <img
                                                     src={nodeIcon || '/placeholder.svg'}
@@ -1073,26 +1075,30 @@ function TreeEditor() {
                             </div>
                             <div
                                 className='opacity-0 group-hover:opacity-100 flex'
-                                onClick={(e) => e.stopPropagation()}>
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <Button
                                     size='icon'
                                     variant='ghost'
                                     onClick={(e) => openAddChildModal(node.id, e)}
-                                    className='h-7 w-7'>
+                                    className='h-7 w-7'
+                                >
                                     <Plus size={16} />
                                 </Button>
                                 <Button
                                     size='icon'
                                     variant='ghost'
                                     onClick={(e) => startEditing(node, e)}
-                                    className='h-7 w-7'>
+                                    className='h-7 w-7'
+                                >
                                     <Edit size={16} />
                                 </Button>
                                 <Button
                                     size='icon'
                                     variant='ghost'
                                     onClick={(e) => deleteNode(node.id, e)}
-                                    className='h-7 w-7'>
+                                    className='h-7 w-7'
+                                >
                                     <Trash size={16} />
                                 </Button>
                             </div>
@@ -1141,7 +1147,8 @@ function TreeEditor() {
                             size='icon'
                             variant='outline'
                             onClick={() => setIsEditingTitle(false)}
-                            className='h-9 w-9'>
+                            className='h-9 w-9'
+                        >
                             <Save size={16} />
                         </Button>
                         <Button
@@ -1151,7 +1158,8 @@ function TreeEditor() {
                                 setIsEditingTitle(false);
                                 setTreeTitle('ツリー構造'); // Reset to default if canceled
                             }}
-                            className='h-9 w-9 ml-2'>
+                            className='h-9 w-9 ml-2'
+                        >
                             <X size={16} />
                         </Button>
                     </div>
@@ -1161,7 +1169,8 @@ function TreeEditor() {
                             <div className='flex items-center'>
                                 <h2
                                     className='text-xl font-semibold cursor-pointer hover:text-primary flex items-center mr-2'
-                                    onClick={() => setIsEditingTitle(true)}>
+                                    onClick={() => setIsEditingTitle(true)}
+                                >
                                     {treeTitle}
                                     <Edit size={14} className='ml-2 opacity-50' />
                                 </h2>
@@ -1261,7 +1270,8 @@ function TreeEditor() {
                                     variant='ghost'
                                     size='icon'
                                     className='absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7'
-                                    onClick={() => setIsSearchHelpOpen(!isSearchHelpOpen)}>
+                                    onClick={() => setIsSearchHelpOpen(!isSearchHelpOpen)}
+                                >
                                     <HelpCircle size={16} />
                                 </Button>
                             </TooltipTrigger>
@@ -1319,7 +1329,8 @@ function TreeEditor() {
                             variant='outline'
                             size='sm'
                             className='mt-2 w-full'
-                            onClick={() => setIsSearchHelpOpen(false)}>
+                            onClick={() => setIsSearchHelpOpen(false)}
+                        >
                             閉じる
                         </Button>
                     </div>
@@ -1346,7 +1357,8 @@ function TreeEditor() {
                 style={{ marginTop: searchResultsHeight > 0 && isSearchFocused ? searchResultsHeight + 8 : 0 }}
                 onDragOver={handleRootDragOver}
                 onDragLeave={handleRootDragLeave}
-                onDrop={handleRootDrop}>
+                onDrop={handleRootDrop}
+            >
                 {isDraggingOverRoot && (
                     <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
                         <p className='text-primary/70 text-sm font-medium'>{t('tree.dropHere')}</p>
@@ -1455,13 +1467,15 @@ function TreeEditor() {
                         <RadioGroup
                             value={currentSampleId}
                             onValueChange={(value) => setCurrentSampleId(value as SampleType)}
-                            className='space-y-3'>
+                            className='space-y-3'
+                        >
                             {allSamples.map((sample) => (
                                 <div
                                     key={sample.id}
                                     className={`flex items-center space-x-2 rounded-md border p-3 ${
                                         currentSampleId === sample.id ? 'border-primary bg-primary/5' : ''
-                                    }`}>
+                                    }`}
+                                >
                                     <RadioGroupItem value={sample.id} id={sample.id} />
                                     <Label htmlFor={sample.id} className='flex-1 cursor-pointer'>
                                         <div className='font-medium'>{sample.name}</div>
@@ -1479,7 +1493,8 @@ function TreeEditor() {
                             onClick={() => {
                                 handleSelectSample(currentSampleId);
                                 setIsSampleSelectorOpen(false);
-                            }}>
+                            }}
+                        >
                             {t('common.save')}
                         </Button>
                     </DialogFooter>

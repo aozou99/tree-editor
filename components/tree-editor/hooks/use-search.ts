@@ -19,8 +19,8 @@ export interface UseSearchReturn {
     selectedResultIndex: number;
     highlightedPath: Set<string>;
     focusMode: boolean;
-    searchInputRef: React.RefObject<HTMLInputElement>;
-    searchResultsRef: React.RefObject<HTMLDivElement>;
+    searchInputRef: React.RefObject<HTMLInputElement | null>;
+    searchResultsRef: React.RefObject<HTMLDivElement | null>;
     searchResultsHeight: number;
     isSearchFocused: boolean;
     setIsSearchFocused: (focused: boolean) => void;
