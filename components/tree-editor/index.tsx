@@ -6,13 +6,9 @@ import { Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { SearchResults } from './tree-editor/features/search-results';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ツリーエディターのコンポーネントとフックをインポート
-import { TreeNodeComponent } from './tree-editor/core/tree-node';
-import { TreeHeader } from './tree-editor/core/tree-header';
-import { useTreeDragDrop } from './tree-editor/hooks/use-tree-drag-drop';
 
 // インポート部分
 import { validateImportData, createExportData } from '@/components/tree-editor/utils/tree-data-utils';
@@ -30,14 +26,7 @@ import {
     createWorkspace,
     saveWorkspace,
 } from '@/components/tree-editor/utils/workspace-utils';
-
-// 追加のインポート
 import { useI18n } from '@/utils/i18n/i18n-context';
-
-// モーダルのインポート
-import { NodeTypeModal } from './tree-editor/modals/node-type-modal';
-import { NodeDetailModal } from './tree-editor/modals/node-detail-modal';
-import { NodeCreateModal } from './tree-editor/modals/node-create-modal';
 
 import {
     Dialog,
@@ -61,11 +50,15 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-// 検索機能のカスタムフックをインポート
-import { useSearch } from './tree-editor/hooks/use-search';
-
-// 型定義
-import { NodeType, TreeNode } from './tree-editor/types';
+import { TreeHeader } from '@/components/tree-editor/core/tree-header';
+import { TreeNodeComponent } from '@/components/tree-editor/core/tree-node';
+import { SearchResults } from '@/components/tree-editor/features/search-results';
+import { useTreeDragDrop } from '@/components/tree-editor/hooks/use-tree-drag-drop';
+import { useSearch } from '@/components/tree-editor/hooks/use-search';
+import { NodeCreateModal } from '@/components/tree-editor/modals/node-create-modal';
+import { NodeDetailModal } from '@/components/tree-editor/modals/node-detail-modal';
+import { NodeTypeModal } from '@/components/tree-editor/modals/node-type-modal';
+import { TreeNode, NodeType } from '@/components/tree-editor/types';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;

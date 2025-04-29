@@ -11,11 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PlusCircle, Edit, Save, Trash, Link, ExternalLink, Play, Pause, AlertCircle } from 'lucide-react';
-import { EmojiPicker } from '../../emoji-picker';
-import { UrlInputDialog } from '../../url-input-dialog';
-import { YouTubeEmbed } from '../../youtube-embed';
-import { ImageUpload } from '../../image-upload';
-import { AudioUpload } from '../../audio-upload';
+import { EmojiPicker } from '../media/emoji-picker';
+import { UrlInputDialog } from './url-input-dialog';
+import { YouTubeEmbed } from '../media/youtube-embed';
+import { ImageUpload } from '../media/image-upload';
+import { AudioUpload } from '../media/audio-upload';
 import { TreeNode, NodeType, CustomField } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 

@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { EmojiPicker } from '../../emoji-picker';
-import { UrlInputDialog } from '../../url-input-dialog';
-import { YouTubeEmbed } from '../../youtube-embed';
-import { ImageUpload } from '../../image-upload';
-import { AudioUpload } from '../../audio-upload';
+import { EmojiPicker } from '../media/emoji-picker';
+import { UrlInputDialog } from './url-input-dialog';
+import { YouTubeEmbed } from '../media/youtube-embed';
+import { ImageUpload } from '../media/image-upload';
+import { AudioUpload } from '../media/audio-upload';
 import { Link } from 'lucide-react';
 import type { NodeType, TreeNode, CustomField } from '../../tree-editor';
 
