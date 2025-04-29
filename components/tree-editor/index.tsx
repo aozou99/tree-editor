@@ -179,7 +179,7 @@ function TreeEditor() {
 
         toast({
             title: t('toast.workspaceCreated'),
-            description: `「${name}」を作成しました`,
+            description: t('toast.workspaceCreated', { name }),
             duration: 3000,
         });
     };
@@ -240,8 +240,8 @@ function TreeEditor() {
         }
 
         toast({
-            title: 'サンプルを変更しました',
-            description: `「${sample.name}」を読み込みました`,
+            title: t('toast.sampleChanged'),
+            description: t('toast.sampleChanged', { name: sample.name }),
             duration: 3000,
         });
     };
@@ -272,8 +272,8 @@ function TreeEditor() {
         setIsResetDialogOpen(false);
 
         toast({
-            title: 'データをリセットしました',
-            description: '初期状態に戻しました',
+            title: t('toast.dataReset'),
+            description: t('toast.dataReset'),
             duration: 3000,
         });
     };
@@ -303,15 +303,15 @@ function TreeEditor() {
             URL.revokeObjectURL(url);
 
             toast({
-                title: 'エクスポート完了',
-                description: 'ツリーデータをJSONファイルとして保存しました',
+                title: t('toast.exportComplete'),
+                description: t('toast.exportComplete'),
                 duration: 3000,
             });
         } catch (error) {
             console.error('エクスポート中にエラーが発生しました:', error);
             toast({
-                title: 'エクスポートエラー',
-                description: 'エクスポートに失敗しました',
+                title: t('toast.exportError'),
+                description: t('toast.exportError'),
                 variant: 'destructive',
                 duration: 5000,
             });
@@ -341,8 +341,8 @@ function TreeEditor() {
                 console.error('ファイルの読み込みに失敗しました:', error);
                 setImportError('ファイルの読み込みに失敗しました');
                 toast({
-                    title: 'インポートエラー',
-                    description: 'ファイルの読み込みに失敗しました',
+                    title: t('toast.importError'),
+                    description: t('toast.importError'),
                     variant: 'destructive',
                     duration: 5000,
                 });
@@ -351,8 +351,8 @@ function TreeEditor() {
         reader.onerror = () => {
             setImportError('ファイルの読み込みに失敗しました');
             toast({
-                title: 'インポートエラー',
-                description: 'ファイルの読み込みに失敗しました',
+                title: t('toast.importError'),
+                description: t('toast.importError'),
                 variant: 'destructive',
                 duration: 5000,
             });
@@ -400,16 +400,16 @@ function TreeEditor() {
             setImportData('');
 
             toast({
-                title: 'インポート完了',
-                description: 'ツリーデータを正常にインポートしました',
+                title: t('toast.importComplete'),
+                description: t('toast.importComplete'),
                 duration: 3000,
             });
         } catch (error) {
             console.error('インポート中にエラーが発生しました:', error);
             setImportError('インポートに失敗しました。JSONの形式が正しくありません。');
             toast({
-                title: 'インポートエラー',
-                description: 'JSONの形式が正しくありません',
+                title: t('toast.importError'),
+                description: t('toast.importError'),
                 variant: 'destructive',
                 duration: 5000,
             });
@@ -675,15 +675,13 @@ function TreeEditor() {
             <AlertDialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>ツリーデータのインポート</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            JSON形式のツリーデータをインポートします。現在のデータは上書きされます。
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('dialogs.import.title')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('dialogs.import.description')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className='grid gap-4 py-4'>
                         <div className='grid grid-cols-4 items-center gap-4'>
                             <Label htmlFor='importData' className='text-right'>
-                                JSONデータ
+                                {t('dialogs.import.jsonData')}
                             </Label>
                             <Textarea
                                 id='importData'
@@ -693,7 +691,7 @@ function TreeEditor() {
                                     setImportData(e.target.value);
                                     setImportError(null);
                                 }}
-                                placeholder='ここにJSONデータを貼り付けてください'
+                                placeholder={t('dialogs.import.placeholder')}
                             />
                         </div>
                         {importError && <p className='text-red-500 text-sm'>{importError}</p>}
@@ -729,7 +727,7 @@ function TreeEditor() {
                     <DialogHeader>
                         <DialogTitle>{t('header.sampleSelection')}</DialogTitle>
                         <DialogDescription>
-                            サンプルデータを選択してください。現在のデータは上書きされます。
+                            {t('header.sampleSelection') + ' ' + t('dialogs.import.description')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className='py-4'>

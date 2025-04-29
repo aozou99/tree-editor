@@ -4,14 +4,7 @@ import { useState, forwardRef } from 'react';
 import { Search, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface SearchBarProps {
@@ -20,7 +13,7 @@ interface SearchBarProps {
     onKeyDown: (e: React.KeyboardEvent) => void;
     onFocus: () => void;
     onBlur: () => void;
-    inputRef?: React.RefObject<HTMLInputElement>;
+    inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 /**
