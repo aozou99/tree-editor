@@ -3,21 +3,6 @@
 import { useState } from 'react';
 import type { TreeNode } from '../types';
 
-interface UseTreeDragDropResult {
-    draggedNodeId: string | null;
-    dragOverNodeId: string | null;
-    dragPosition: 'before' | 'after' | 'inside' | null;
-    isDraggingOverRoot: boolean;
-    handleDragStart: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
-    handleDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
-    handleDragOver: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
-    handleDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-    handleDrop: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
-    handleRootDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-    handleRootDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-    handleRootDrop: (e: React.DragEvent<HTMLDivElement>) => void;
-}
-
 export function useTreeDragDrop(tree: TreeNode[], setTree: React.Dispatch<React.SetStateAction<TreeNode[]>>) {
     const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
     const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null);
@@ -175,16 +160,33 @@ export function useTreeDragDrop(tree: TreeNode[], setTree: React.Dispatch<React.
     // プロセッシング関数
     const processNodeForBeforeInsertion = (node: TreeNode, targetNodeId: string, sourceNode: TreeNode): TreeNode => {
         if (node.children.length > 0) {
-            const newChildren = node.children.reduce<TreeNode[]>((acc, child) => {
-                if (child.id === targetNodeId) {
-                    acc.push(sourceNode, child); // ディープコピーではなく元のノードを使用
-                } else {
-                    acc.push(processNodeForBeforeInsertion(child, targetNodeId, sourceNode));
-                }
-                return acc;
-            }, []);
+            // 子ノードの配列を作成する前に、まず子ノードにターゲットノードが含まれているか確認
+            const hasTargetNode = node.children.some((child) => child.id === targetNodeId);
 
-            return { ...node, children: newChildren };
+            if (hasTargetNode) {
+                // ターゲットノードが直接の子である場合、新しい子ノード配列を作成
+                const newChildren: TreeNode[] = [];
+
+                for (const child of node.children) {
+                    if (child.id === targetNodeId) {
+                        newChildren.push(sourceNode); // 先にソースノードを追加
+                        newChildren.push(child); // 次にターゲットノードを追加
+                    } else if (child.id !== sourceNode.id) {
+                        // ソースノード自体は既に削除されているので、これは必要ない
+                        newChildren.push(child);
+                    }
+                }
+
+                return { ...node, children: newChildren };
+            } else {
+                // ターゲットノードが直接の子でない場合は、再帰的に子ノードを処理
+                return {
+                    ...node,
+                    children: node.children.map((child) =>
+                        processNodeForBeforeInsertion(child, targetNodeId, sourceNode),
+                    ),
+                };
+            }
         }
 
         return node;
@@ -192,16 +194,33 @@ export function useTreeDragDrop(tree: TreeNode[], setTree: React.Dispatch<React.
 
     const processNodeForAfterInsertion = (node: TreeNode, targetNodeId: string, sourceNode: TreeNode): TreeNode => {
         if (node.children.length > 0) {
-            const newChildren = node.children.reduce<TreeNode[]>((acc, child) => {
-                if (child.id === targetNodeId) {
-                    acc.push(child, sourceNode); // ディープコピーではなく元のノードを使用
-                } else {
-                    acc.push(processNodeForAfterInsertion(child, targetNodeId, sourceNode));
-                }
-                return acc;
-            }, []);
+            // 子ノードの配列を作成する前に、まず子ノードにターゲットノードが含まれているか確認
+            const hasTargetNode = node.children.some((child) => child.id === targetNodeId);
 
-            return { ...node, children: newChildren };
+            if (hasTargetNode) {
+                // ターゲットノードが直接の子である場合、新しい子ノード配列を作成
+                const newChildren: TreeNode[] = [];
+
+                for (const child of node.children) {
+                    if (child.id === targetNodeId) {
+                        newChildren.push(child); // 先にターゲットノードを追加
+                        newChildren.push(sourceNode); // 次にソースノードを追加
+                    } else if (child.id !== sourceNode.id) {
+                        // ソースノード自体は既に削除されているので、これは必要ない
+                        newChildren.push(child);
+                    }
+                }
+
+                return { ...node, children: newChildren };
+            } else {
+                // ターゲットノードが直接の子でない場合は、再帰的に子ノードを処理
+                return {
+                    ...node,
+                    children: node.children.map((child) =>
+                        processNodeForAfterInsertion(child, targetNodeId, sourceNode),
+                    ),
+                };
+            }
         }
 
         return node;
@@ -226,85 +245,155 @@ export function useTreeDragDrop(tree: TreeNode[], setTree: React.Dispatch<React.
                 return;
             }
 
+            // ターゲットノードとその情報を取得
+            const { node: targetNode, path: targetPath } = findNode(targetNodeId);
+            if (!targetNode) {
+                console.error('ターゲットノードが見つかりません');
+                return;
+            }
+
             // ターゲットノードが子孫かチェック
-            const { path: targetPath } = findNode(targetNodeId);
             if (targetPath.includes(draggedNodeId)) {
                 console.error('子孫ノードへのドロップはできません');
                 return;
             }
 
-            // 現在のツリーからソースノードを削除
-            const treeWithoutSource = removeNode(draggedNodeId, [...tree]);
+            // ノードのディープコピーを作成し、確実にソースノードの参照を保持
+            const sourceNodeCopy = JSON.parse(JSON.stringify(sourceNode));
 
-            // ドロップ位置に基づいてノードを挿入
-            let newTree: TreeNode[];
+            // 新しいツリーを構築する関数
+            const buildNewTree = () => {
+                // まずツリーのディープコピーを作成
+                const newTreeCopy: TreeNode[] = JSON.parse(JSON.stringify(tree));
 
-            if (dragPosition === 'inside') {
-                // 子ノードとして追加
-                newTree = treeWithoutSource.map((node) => {
-                    if (node.id === targetNodeId) {
-                        return {
+                // ソースノードを削除
+                const removeSourceNode = (nodes: TreeNode[]): TreeNode[] => {
+                    return nodes
+                        .filter((node) => node.id !== draggedNodeId)
+                        .map((node) => ({
                             ...node,
-                            isExpanded: true, // 自動的に展開
-                            children: [...node.children, sourceNode], // ディープコピーではなく元のノードを使用
-                        };
-                    }
+                            children: node.children.length > 0 ? removeSourceNode(node.children) : node.children,
+                        }));
+                };
 
-                    if (node.children.length > 0) {
-                        const newChildren = node.children.map((child) => {
-                            if (child.id === targetNodeId) {
+                const treeWithoutSource = removeSourceNode(newTreeCopy);
+
+                // ターゲットノードを見つけて操作を適用
+                if (dragPosition === 'inside') {
+                    // 子ノードとして追加
+                    const addAsChild = (nodes: TreeNode[]): TreeNode[] => {
+                        return nodes.map((node) => {
+                            if (node.id === targetNodeId) {
                                 return {
-                                    ...child,
-                                    isExpanded: true, // 自動的に展開
-                                    children: [...child.children, sourceNode], // ディープコピーではなく元のノードを使用
+                                    ...node,
+                                    isExpanded: true,
+                                    children: [...node.children, sourceNodeCopy],
                                 };
                             }
-                            return child;
+                            return {
+                                ...node,
+                                children: node.children.length > 0 ? addAsChild(node.children) : node.children,
+                            };
                         });
+                    };
 
-                        // 子ノードに変更があったかチェック
-                        const hasChanges = newChildren.some((child, index) => child !== node.children[index]);
-
-                        if (hasChanges) {
-                            return { ...node, children: newChildren };
+                    return addAsChild(treeWithoutSource);
+                } else if (dragPosition === 'before') {
+                    // ノードの前に追加
+                    if (targetPath.length <= 1) {
+                        // ルートレベルのノード
+                        const result: TreeNode[] = [];
+                        for (const node of treeWithoutSource) {
+                            if (node.id === targetNodeId) {
+                                result.push(sourceNodeCopy);
+                                result.push(node);
+                            } else {
+                                result.push(node);
+                            }
                         }
-                    }
-
-                    return node;
-                });
-            } else if (dragPosition === 'before') {
-                // ターゲットノードの前に挿入
-                newTree = [];
-
-                for (const node of treeWithoutSource) {
-                    if (node.id === targetNodeId) {
-                        // ルートレベルでの前挿入
-                        newTree.push(sourceNode); // ディープコピーではなく元のノードを使用
-                        newTree.push(node);
+                        return result;
                     } else {
-                        // 子ノードでの前挿入を処理
-                        const processedNode = processNodeForBeforeInsertion(node, targetNodeId, sourceNode); // ディープコピーではなく元のノードを使用
-                        newTree.push(processedNode);
+                        // ネストされたノード
+                        const insertBefore = (nodes: TreeNode[], pathIndex = 0): TreeNode[] => {
+                            return nodes.map((node) => {
+                                if (node.id === targetPath[pathIndex]) {
+                                    if (pathIndex === targetPath.length - 2) {
+                                        // 親ノードに到達
+                                        const newChildren: TreeNode[] = [];
+                                        for (const child of node.children) {
+                                            if (child.id === targetPath[pathIndex + 1]) {
+                                                newChildren.push(sourceNodeCopy);
+                                                newChildren.push(child);
+                                            } else {
+                                                newChildren.push(child);
+                                            }
+                                        }
+                                        return { ...node, children: newChildren };
+                                    } else {
+                                        // まだ到達していない、さらに深く探索
+                                        return {
+                                            ...node,
+                                            children: insertBefore(node.children, pathIndex + 1),
+                                        };
+                                    }
+                                }
+                                return node;
+                            });
+                        };
+
+                        return insertBefore(treeWithoutSource);
+                    }
+                } else {
+                    // after
+                    // ノードの後に追加
+                    if (targetPath.length <= 1) {
+                        // ルートレベルのノード
+                        const result: TreeNode[] = [];
+                        for (const node of treeWithoutSource) {
+                            if (node.id === targetNodeId) {
+                                result.push(node);
+                                result.push(sourceNodeCopy);
+                            } else {
+                                result.push(node);
+                            }
+                        }
+                        return result;
+                    } else {
+                        // ネストされたノード
+                        const insertAfter = (nodes: TreeNode[], pathIndex = 0): TreeNode[] => {
+                            return nodes.map((node) => {
+                                if (node.id === targetPath[pathIndex]) {
+                                    if (pathIndex === targetPath.length - 2) {
+                                        // 親ノードに到達
+                                        const newChildren: TreeNode[] = [];
+                                        for (const child of node.children) {
+                                            if (child.id === targetPath[pathIndex + 1]) {
+                                                newChildren.push(child);
+                                                newChildren.push(sourceNodeCopy);
+                                            } else {
+                                                newChildren.push(child);
+                                            }
+                                        }
+                                        return { ...node, children: newChildren };
+                                    } else {
+                                        // まだ到達していない、さらに深く探索
+                                        return {
+                                            ...node,
+                                            children: insertAfter(node.children, pathIndex + 1),
+                                        };
+                                    }
+                                }
+                                return node;
+                            });
+                        };
+
+                        return insertAfter(treeWithoutSource);
                     }
                 }
-            } else {
-                // after
-                // ターゲットノードの後に挿入
-                newTree = [];
+            };
 
-                for (const node of treeWithoutSource) {
-                    if (node.id === targetNodeId) {
-                        // ルートレベルでの後挿入
-                        newTree.push(node);
-                        newTree.push(sourceNode); // ディープコピーではなく元のノードを使用
-                    } else {
-                        // 子ノードでの後挿入を処理
-                        const processedNode = processNodeForAfterInsertion(node, targetNodeId, sourceNode); // ディープコピーではなく元のノードを使用
-                        newTree.push(processedNode);
-                    }
-                }
-            }
-
+            // 新しいツリーを構築して設定
+            const newTree = buildNewTree();
             setTree(newTree);
 
             // リセット
@@ -315,6 +404,92 @@ export function useTreeDragDrop(tree: TreeNode[], setTree: React.Dispatch<React.
         } catch (error) {
             console.error('ドロップ処理中にエラーが発生しました:', error);
         }
+    };
+
+    // ネストされたツリー内の特定のノードの前に挿入する再帰関数
+    const insertBeforeInNestedTree = (node: TreeNode, targetPath: string[], sourceNode: TreeNode): TreeNode => {
+        if (targetPath.length === 0) {
+            return node;
+        }
+
+        // 現在のノードがターゲットパスの一部かどうか確認
+        if (node.id === targetPath[0]) {
+            if (targetPath.length === 1) {
+                // このノードがターゲットノード
+                return node;
+            }
+
+            // このノードはターゲットの祖先
+            const remainingPath = targetPath.slice(1);
+            // 最後のパス要素がターゲットノード自体
+            if (remainingPath.length === 1) {
+                // ターゲットが直接の子である
+                const newChildren: TreeNode[] = [];
+
+                for (const child of node.children) {
+                    if (child.id === remainingPath[0]) {
+                        // ターゲットの前に挿入
+                        newChildren.push(sourceNode);
+                        newChildren.push(child);
+                    } else {
+                        newChildren.push(child);
+                    }
+                }
+
+                return { ...node, children: newChildren };
+            } else {
+                // さらに階層が深い
+                return {
+                    ...node,
+                    children: node.children.map((child) => insertBeforeInNestedTree(child, remainingPath, sourceNode)),
+                };
+            }
+        }
+
+        return node;
+    };
+
+    // ネストされたツリー内の特定のノードの後に挿入する再帰関数
+    const insertAfterInNestedTree = (node: TreeNode, targetPath: string[], sourceNode: TreeNode): TreeNode => {
+        if (targetPath.length === 0) {
+            return node;
+        }
+
+        // 現在のノードがターゲットパスの一部かどうか確認
+        if (node.id === targetPath[0]) {
+            if (targetPath.length === 1) {
+                // このノードがターゲットノード
+                return node;
+            }
+
+            // このノードはターゲットの祖先
+            const remainingPath = targetPath.slice(1);
+            // 最後のパス要素がターゲットノード自体
+            if (remainingPath.length === 1) {
+                // ターゲットが直接の子である
+                const newChildren: TreeNode[] = [];
+
+                for (const child of node.children) {
+                    if (child.id === remainingPath[0]) {
+                        // ターゲットの後に挿入
+                        newChildren.push(child);
+                        newChildren.push(sourceNode);
+                    } else {
+                        newChildren.push(child);
+                    }
+                }
+
+                return { ...node, children: newChildren };
+            } else {
+                // さらに階層が深い
+                return {
+                    ...node,
+                    children: node.children.map((child) => insertAfterInNestedTree(child, remainingPath, sourceNode)),
+                };
+            }
+        }
+
+        return node;
     };
 
     // ルートレベルへのドラッグオーバー
