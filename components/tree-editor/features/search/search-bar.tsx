@@ -4,7 +4,14 @@ import { useState, forwardRef } from 'react';
 import { Search, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface SearchBarProps {
@@ -36,84 +43,73 @@ const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(
                         onKeyDown={onKeyDown}
                         onFocus={onFocus}
                         onBlur={() => {
-                            // 少し遅延させてクリックイベントが先に処理されるようにする
                             setTimeout(onBlur, 200);
                         }}
                         placeholder={t('search.placeholder')}
                         className='pl-8 pr-10'
                     />
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant='ghost'
-                                    size='icon'
-                                    className='absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7'
-                                    onClick={() => setIsSearchHelpOpen(!isSearchHelpOpen)}
-                                >
-                                    <HelpCircle size={16} />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side='bottom' className='w-80 p-3'>
-                                <div className='space-y-2'>
-                                    <h3 className='font-semibold'>検索構文</h3>
-                                    <ul className='text-xs space-y-1'>
-                                        <li>
-                                            <span className='font-medium'>通常検索:</span> テキストをそのまま入力
-                                        </li>
-                                        <li>
-                                            <span className='font-medium'>ノードタイプ検索:</span> type:タイプ名
-                                        </li>
-                                        <li>
-                                            <span className='font-medium'>フィールド検索:</span> フィールド名:値
-                                        </li>
-                                        <li>
-                                            <span className='font-medium'>複合検索:</span> type:社員 部署:営業部 鈴木
-                                        </li>
-                                    </ul>
-                                </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <Button
+                        variant='ghost'
+                        size='icon'
+                        className='absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7'
+                        onClick={() => setIsSearchHelpOpen(true)}
+                        aria-label={t('search.help.title')}
+                    >
+                        <HelpCircle size={16} />
+                    </Button>
                 </div>
 
-                {isSearchHelpOpen && (
-                    <div className='mt-2 p-3 bg-muted/30 rounded-md text-sm'>
-                        <h3 className='font-semibold mb-2'>検索ヘルプ</h3>
-                        <div className='space-y-2'>
+                {/* 検索ヘルプダイアログ */}
+                <Dialog open={isSearchHelpOpen} onOpenChange={setIsSearchHelpOpen}>
+                    <DialogContent className='max-w-lg'>
+                        <DialogHeader>
+                            <DialogTitle>{t('search.help.title')}</DialogTitle>
+                        </DialogHeader>
+                        <div className='space-y-4 mt-2'>
                             <div>
-                                <p className='font-medium'>基本検索</p>
+                                <p className='font-medium'>{t('search.help.basicSearch.title')}</p>
                                 <p className='text-xs text-muted-foreground'>
-                                    ノード名、サムネイル、フィールド値を検索します。
+                                    {t('search.help.basicSearch.description')}
                                 </p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: 鈴木</p>
+                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>
+                                    {t('search.help.basicSearch.example')}
+                                </p>
                             </div>
                             <div>
-                                <p className='font-medium'>ノードタイプ検索</p>
-                                <p className='text-xs text-muted-foreground'>特定のノードタイプを検索します。</p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: type:社員</p>
+                                <p className='font-medium'>{t('search.help.typeSearch.title')}</p>
+                                <p className='text-xs text-muted-foreground'>
+                                    {t('search.help.typeSearch.description')}
+                                </p>
+                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>
+                                    {t('search.help.typeSearch.example')}
+                                </p>
                             </div>
                             <div>
-                                <p className='font-medium'>フィールド検索</p>
-                                <p className='text-xs text-muted-foreground'>特定のフィールドの値を検索します。</p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: 部署:営業部</p>
+                                <p className='font-medium'>{t('search.help.fieldSearch.title')}</p>
+                                <p className='text-xs text-muted-foreground'>
+                                    {t('search.help.fieldSearch.description')}
+                                </p>
+                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>
+                                    {t('search.help.fieldSearch.example')}
+                                </p>
                             </div>
                             <div>
-                                <p className='font-medium'>複合検索</p>
-                                <p className='text-xs text-muted-foreground'>複数の条件を組み合わせて検索します。</p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: type:社員 部署:営業部 鈴木</p>
+                                <p className='font-medium'>{t('search.help.combinedSearch.title')}</p>
+                                <p className='text-xs text-muted-foreground'>
+                                    {t('search.help.combinedSearch.description')}
+                                </p>
+                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>
+                                    {t('search.help.combinedSearch.example')}
+                                </p>
                             </div>
                         </div>
-                        <Button
-                            variant='outline'
-                            size='sm'
-                            className='mt-2 w-full'
-                            onClick={() => setIsSearchHelpOpen(false)}
-                        >
-                            閉じる
-                        </Button>
-                    </div>
-                )}
+                        <DialogFooter>
+                            <Button variant='outline' onClick={() => setIsSearchHelpOpen(false)}>
+                                {t('common.close')}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         );
     },
