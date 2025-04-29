@@ -1,6 +1,5 @@
 'use client';
 
-import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type React from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, HelpCircle } from 'lucide-react';
@@ -11,22 +10,19 @@ import { SearchResults } from './search-results';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ツリーエディターのコンポーネントとフックをインポート
-import { TreeNodeComponent } from './tree-editor/components/tree-node';
-import { TreeHeader } from './tree-editor/components/tree-header';
+import { TreeNodeComponent } from './tree-editor/core/tree-node';
+import { TreeHeader } from './tree-editor/core/tree-header';
 import { useTreeDragDrop } from './tree-editor/hooks/use-tree-drag-drop';
 
 // インポート部分
 import { validateImportData, createExportData } from '@/utils/tree-data-utils';
 import { toast } from '@/components/ui/use-toast';
 import { getSampleById, organizationSample, type SampleType, allSamples } from '@/utils/sample-data';
-import { WorkspaceManager } from './workspace-manager';
 import type { Workspace } from '@/utils/workspace-utils';
 import { loadWorkspaceList, loadWorkspace, createWorkspace, saveWorkspace } from '@/utils/workspace-utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 
 // 追加のインポート
 import { useI18n } from '@/utils/i18n/i18n-context';
-import { LanguageSwitcher } from './language-switcher';
 
 // モーダルのインポート
 import { NodeTypeModal } from './node-type-modal';
@@ -59,7 +55,7 @@ import {
 import { useSearch } from './tree-editor/hooks/use-search';
 
 // 型定義
-import { CustomFieldDefinition, NodeType, CustomField, TreeNode } from './tree-editor/types';
+import { NodeType, TreeNode } from './tree-editor/types';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;
