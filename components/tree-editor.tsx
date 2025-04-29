@@ -25,9 +25,9 @@ import { loadWorkspaceList, loadWorkspace, createWorkspace, saveWorkspace } from
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 // モーダルのインポート
-import { NodeTypeModal } from './node-type-modal';
-import { NodeDetailModal } from './node-detail-modal';
-import { NodeCreateModal } from './node-create-modal';
+import { NodeTypeModal } from './tree-editor/modals/node-type-modal';
+import { NodeDetailModal } from './tree-editor/modals/node-detail-modal';
+import { NodeCreateModal } from './tree-editor/modals/node-create-modal';
 
 import {
     Dialog,

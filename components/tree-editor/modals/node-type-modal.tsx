@@ -11,8 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlusCircle, Edit, Save, Trash, Link, Upload } from 'lucide-react';
-import { EmojiPicker } from './emoji-picker';
-import { UrlInputDialog } from './url-input-dialog';
+import { EmojiPicker } from '../../emoji-picker';
+import { UrlInputDialog } from '../../url-input-dialog';
 import { NodeType, CustomFieldDefinition } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 
