@@ -3,7 +3,82 @@
 import { useState } from 'react';
 import type { TreeNode } from '../types';
 
-export function useTreeDragDrop(tree: TreeNode[], setTree: React.Dispatch<React.SetStateAction<TreeNode[]>>) {
+/**
+ * ツリー構造のノードをドラッグ＆ドロップで操作するためのカスタムフック
+ *
+ * このフックは階層構造を持つツリーノードの再配置のための機能を提供します。
+ * ノードの並び替え、親子関係の変更、異なる階層への移動などの操作が可能です。
+ *
+ * 主な機能:
+ * - ノードのドラッグ＆ドロップ処理
+ * - ドロップ位置の指定（before/after/inside）
+ * - ドラッグ中の視覚的フィードバック
+ * - ルートレベルへのドロップ対応
+ * - ノード間の親子関係の変更
+ *
+ * @param {TreeNode[]} tree - 現在のツリー構造の配列
+ * @param {React.Dispatch<React.SetStateAction<TreeNode[]>>} setTree - ツリー状態を更新する関数
+ *
+ * @returns {Object} 以下のプロパティとメソッドを含むオブジェクト
+ *   - draggedNodeId: 現在ドラッグ中のノードID
+ *   - dragOverNodeId: ドラッグオーバー中のノードID
+ *   - dragPosition: ドロップ位置（'before'|'after'|'inside'|null）
+ *   - isDraggingOverRoot: ルートエリアへのドラッグ中かどうか
+ *   - handleDragStart: ドラッグ開始ハンドラ
+ *   - handleDragEnd: ドラッグ終了ハンドラ
+ *   - handleDragOver: ドラッグオーバーハンドラ
+ *   - handleDragLeave: ドラッグリーブハンドラ
+ *   - handleDrop: ドロップハンドラ
+ *   - handleRootDragOver: ルートへのドラッグオーバーハンドラ
+ *   - handleRootDragLeave: ルートからのドラッグリーブハンドラ
+ *   - handleRootDrop: ルートへのドロップハンドラ
+ *
+ * @example
+ * const MyTreeComponent = () => {
+ *   const [tree, setTree] = useState<TreeNode[]>(initialTree);
+ *   const {
+ *     handleDragStart,
+ *     handleDragOver,
+ *     handleDrop,
+ *     dragPosition,
+ *     dragOverNodeId
+ *   } = useTreeDragDrop(tree, setTree);
+ *
+ *   return (
+ *     <div>
+ *       {tree.map(node => (
+ *         <div
+ *           key={node.id}
+ *           draggable
+ *           onDragStart={(e) => handleDragStart(e, node.id)}
+ *           onDragOver={(e) => handleDragOver(e, node.id)}
+ *           onDrop={(e) => handleDrop(e, node.id)}
+ *           className={dragOverNodeId === node.id ? `drag-over-${dragPosition}` : ''}
+ *         >
+ *           {node.name}
+ *         </div>
+ *       ))}
+ *     </div>
+ *   );
+ * }
+ */
+export function useTreeDragDrop(
+    tree: TreeNode[],
+    setTree: React.Dispatch<React.SetStateAction<TreeNode[]>>,
+): {
+    draggedNodeId: string | null;
+    dragOverNodeId: string | null;
+    dragPosition: 'before' | 'after' | 'inside' | null;
+    isDraggingOverRoot: boolean;
+    handleDragStart: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
+    handleDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
+    handleDragOver: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
+    handleDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
+    handleDrop: (e: React.DragEvent<HTMLDivElement>, targetNodeId: string) => void;
+    handleRootDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+    handleRootDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
+    handleRootDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+} {
     const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
     const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null);
     const [dragPosition, setDragPosition] = useState<'before' | 'after' | 'inside' | null>(null);
