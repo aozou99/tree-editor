@@ -2,15 +2,8 @@
 
 import type React from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-// ツリーエディターのコンポーネントとフックをインポート
-
-// インポート部分
 import { validateImportData, createExportData } from '@/components/tree-editor/utils/tree-data-utils';
 import { toast } from '@/components/ui/use-toast';
 import {
@@ -52,13 +45,13 @@ import {
 
 import { TreeHeader } from '@/components/tree-editor/core/tree-header';
 import { TreeNodeComponent } from '@/components/tree-editor/core/tree-node';
-import { SearchResults } from '@/components/tree-editor/features/search-results';
 import { useTreeDragDrop } from '@/components/tree-editor/hooks/use-tree-drag-drop';
-import { useSearch } from '@/components/tree-editor/hooks/use-search';
 import { NodeCreateModal } from '@/components/tree-editor/modals/node-create-modal';
 import { NodeDetailModal } from '@/components/tree-editor/modals/node-detail-modal';
 import { NodeTypeModal } from '@/components/tree-editor/modals/node-type-modal';
 import { TreeNode, NodeType } from '@/components/tree-editor/types';
+import SearchFeature from '@/components/tree-editor/features/search/search-feature';
+import { useSearch } from '@/components/tree-editor/hooks/use-search';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;
@@ -120,7 +113,7 @@ function TreeEditor() {
         handleRootDrop,
     } = useTreeDragDrop(tree, setTree);
 
-    // 検索機能のカスタムフックを使用
+    // 検索機能のカスタムフックをindex.tsxで呼び出し
     const {
         searchQuery,
         setSearchQuery,
@@ -134,7 +127,7 @@ function TreeEditor() {
         isSearchFocused,
         setIsSearchFocused,
         handleSelectSearchResult,
-        handleOpenDetailModal: openDetailFromSearch,
+        handleOpenDetailModal,
         handleSearchKeyDown,
     } = useSearch({ tree, nodeTypes });
 
@@ -582,105 +575,21 @@ function TreeEditor() {
 
             {/* 検索機能 */}
             <div className='mb-4 relative'>
-                <div className='relative flex items-center'>
-                    <Search className='absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
-                    <Input
-                        ref={searchInputRef}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={handleSearchKeyDown}
-                        onFocus={() => setIsSearchFocused(true)}
-                        onBlur={() => {
-                            // 少し遅延させてクリックイベントが先に処理されるようにする
-                            setTimeout(() => setIsSearchFocused(false), 200);
-                        }}
-                        placeholder={t('search.placeholder')}
-                        className='pl-8 pr-10'
-                    />
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant='ghost'
-                                    size='icon'
-                                    className='absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7'
-                                    onClick={() => setIsSearchHelpOpen(!isSearchHelpOpen)}
-                                >
-                                    <HelpCircle size={16} />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side='bottom' className='w-80 p-3'>
-                                <div className='space-y-2'>
-                                    <h3 className='font-semibold'>検索構文</h3>
-                                    <ul className='text-xs space-y-1'>
-                                        <li>
-                                            <span className='font-medium'>通常検索:</span> テキストをそのまま入力
-                                        </li>
-                                        <li>
-                                            <span className='font-medium'>ノードタイプ検索:</span> type:タイプ名
-                                        </li>
-                                        <li>
-                                            <span className='font-medium'>フィールド検索:</span> フィールド名:値
-                                        </li>
-                                        <li>
-                                            <span className='font-medium'>複合検索:</span> type:社員 部署:営業部 鈴木
-                                        </li>
-                                    </ul>
-                                </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-
-                {isSearchHelpOpen && (
-                    <div className='mt-2 p-3 bg-muted/30 rounded-md text-sm'>
-                        <h3 className='font-semibold mb-2'>検索ヘルプ</h3>
-                        <div className='space-y-2'>
-                            <div>
-                                <p className='font-medium'>基本検索</p>
-                                <p className='text-xs text-muted-foreground'>
-                                    ノード名、サムネイル、フィールド値を検索します。
-                                </p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: 鈴木</p>
-                            </div>
-                            <div>
-                                <p className='font-medium'>ノードタイプ検索</p>
-                                <p className='text-xs text-muted-foreground'>特定のノードタイプを検索します。</p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: type:社員</p>
-                            </div>
-                            <div>
-                                <p className='font-medium'>フィールド検索</p>
-                                <p className='text-xs text-muted-foreground'>特定のフィールドの値を検索します。</p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: 部署:営業部</p>
-                            </div>
-                            <div>
-                                <p className='font-medium'>複合検索</p>
-                                <p className='text-xs text-muted-foreground'>複数の条件を組み合わせて検索します。</p>
-                                <p className='text-xs bg-muted/50 p-1 rounded mt-1'>例: type:社員 部署:営業部 鈴木</p>
-                            </div>
-                        </div>
-                        <Button
-                            variant='outline'
-                            size='sm'
-                            className='mt-2 w-full'
-                            onClick={() => setIsSearchHelpOpen(false)}
-                        >
-                            閉じる
-                        </Button>
-                    </div>
-                )}
-
-                {/* 検索結果 */}
-                {searchResults.length > 0 && isSearchFocused && (
-                    <SearchResults
-                        ref={searchResultsRef}
-                        results={searchResults}
-                        selectedIndex={selectedResultIndex}
-                        onSelect={handleSelectSearchResult}
-                        onOpen={openDetailFromSearch}
-                        className='absolute z-10 w-full bg-white border rounded-md shadow-md max-h-60 overflow-y-auto'
-                    />
-                )}
+                <SearchFeature
+                    searchQuery={searchQuery}
+                    onChange={setSearchQuery}
+                    onKeyDown={handleSearchKeyDown}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    inputRef={searchInputRef}
+                    searchResults={searchResults}
+                    selectedResultIndex={selectedResultIndex}
+                    onSelectResult={handleSelectSearchResult}
+                    onOpenResult={handleOpenDetailModal}
+                    searchResultsRef={searchResultsRef}
+                    isSearchFocused={isSearchFocused}
+                    searchResultsHeight={searchResultsHeight}
+                />
             </div>
 
             {/* ツリーノードコンテナ */}
