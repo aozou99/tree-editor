@@ -6,7 +6,7 @@ import { Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { SearchResults } from './search-results';
+import { SearchResults } from './tree-editor/features/search-results';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ツリーエディターのコンポーネントとフックをインポート
@@ -15,11 +15,21 @@ import { TreeHeader } from './tree-editor/core/tree-header';
 import { useTreeDragDrop } from './tree-editor/hooks/use-tree-drag-drop';
 
 // インポート部分
-import { validateImportData, createExportData } from '@/utils/tree-data-utils';
+import { validateImportData, createExportData } from '@/components/tree-editor/utils/tree-data-utils';
 import { toast } from '@/components/ui/use-toast';
-import { getSampleById, organizationSample, type SampleType, allSamples } from '@/utils/sample-data';
-import type { Workspace } from '@/utils/workspace-utils';
-import { loadWorkspaceList, loadWorkspace, createWorkspace, saveWorkspace } from '@/utils/workspace-utils';
+import {
+    getSampleById,
+    organizationSample,
+    type SampleType,
+    allSamples,
+} from '@/components/tree-editor/features/sample-selector/sample-data';
+import type { Workspace } from '@/components/tree-editor/utils/workspace-utils';
+import {
+    loadWorkspaceList,
+    loadWorkspace,
+    createWorkspace,
+    saveWorkspace,
+} from '@/components/tree-editor/utils/workspace-utils';
 
 // 追加のインポート
 import { useI18n } from '@/utils/i18n/i18n-context';
