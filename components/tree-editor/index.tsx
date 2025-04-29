@@ -64,7 +64,6 @@ function TreeEditor() {
     const [editingName, setEditingName] = useState<string>('');
     const [isEditingTitle, setIsEditingTitle] = useState<boolean>(false);
     const [treeTitle, setTreeTitle] = useState<string>(organizationSample.treeTitle);
-    const [isSearchHelpOpen, setIsSearchHelpOpen] = useState<boolean>(false);
     const [lastSaved, setLastSaved] = useState<string | null>(null);
     const [isResetDialogOpen, setIsResetDialogOpen] = useState<boolean>(false);
     const [currentSampleId, setCurrentSampleId] = useState<SampleType>('organization');
