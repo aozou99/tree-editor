@@ -44,11 +44,11 @@ const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(
                     <Button
                         variant='ghost'
                         size='icon'
-                        className='absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7'
+                        className='absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8'
                         onClick={() => setIsSearchHelpOpen(true)}
                         aria-label={t('search.help.title')}
                     >
-                        <HelpCircle size={16} />
+                        <HelpCircle />
                     </Button>
                 </div>
 
