@@ -14,7 +14,8 @@ import { YouTubeEmbed } from '../media/youtube-embed';
 import { ImageUpload } from '../media/image-upload';
 import { AudioUpload } from '../media/audio-upload';
 import { Link } from 'lucide-react';
-import type { NodeType, TreeNode, CustomField } from '../../tree-editor';
+import { NodeType, TreeNode, CustomField } from '@/components/tree-editor/types';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface NodeCreateModalProps {
     open: boolean;
@@ -31,6 +32,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [nodeIcon, setNodeIcon] = useState<string | undefined>(undefined);
     const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
+    const { t } = useI18n();
 
     // タイプが選択されたらフィールドを初期化
     useEffect(() => {
@@ -151,7 +153,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
         const errors: { [key: string]: string } = {};
 
         if (!nodeName.trim()) {
-            errors['nodeName'] = 'ノード名は必須です';
+            errors['nodeName'] = t('dialogs.node.create.validation.nodeNameRequired');
         }
 
         if (selectedType) {
@@ -159,7 +161,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                 if (def.required) {
                     const field = customFields.find((f) => f.definitionId === def.id);
                     if (!field || !field.value.trim()) {
-                        errors[field?.id || def.id] = `${def.name}は必須です`;
+                        errors[field?.id || def.id] = `${def.name}${t('dialogs.node.create.validation.fieldRequired')}`;
                     }
                 }
             });
@@ -168,14 +170,14 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
             customFields.forEach((field) => {
                 if (field.type === 'link' && field.value) {
                     if (!isValidUrl(field.value)) {
-                        errors[field.id] = '有効なURLを入力してください';
+                        errors[field.id] = t('dialogs.node.create.validation.validUrl');
                     }
                 }
 
                 // YouTubeフィールドのURLバリデーション
                 if (field.type === 'youtube' && field.value) {
                     if (!isValidYouTubeUrl(field.value)) {
-                        errors[field.id] = '有効なYouTube URLを入力してください';
+                        errors[field.id] = t('dialogs.node.create.validation.validYouTube');
                     }
                 }
             });
@@ -204,7 +206,9 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className='sm:max-w-md md:max-w-lg max-h-[90vh]'>
                 <DialogHeader>
-                    <DialogTitle>{parentNodeId ? '子ノードの追加' : 'ルートノードの追加'}</DialogTitle>
+                    <DialogTitle>
+                        {parentNodeId ? t('dialogs.node.create.childTitle') : t('dialogs.node.create.rootTitle')}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <ScrollArea className='max-h-[70vh] pr-4'>
@@ -212,7 +216,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                         {/* タイプ選択 */}
                         <div>
                             <Label className='text-sm font-semibold mb-2 block'>
-                                ノードタイプを選択 <span className='text-red-500'>*</span>
+                                {t('dialogs.node.create.selectType')} <span className='text-red-500'>*</span>
                             </Label>
                             <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
                                 {nodeTypes.map((type) => (
@@ -231,7 +235,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                             </div>
                             {nodeTypes.length === 0 && (
                                 <div className='text-center py-4 text-sm text-muted-foreground'>
-                                    ノードタイプが定義されていません。先にノードタイプを作成してください。
+                                    {t('dialogs.node.create.typeNotDefined')}
                                 </div>
                             )}
                         </div>
@@ -241,7 +245,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                 {/* ノード名 */}
                                 <div>
                                     <Label htmlFor='node-name' className='text-sm font-semibold mb-1 block'>
-                                        ノード名 <span className='text-red-500'>*</span>
+                                        {t('dialogs.node.create.nodeName')} <span className='text-red-500'>*</span>
                                     </Label>
                                     <Input
                                         id='node-name'
@@ -257,7 +261,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                 {/* アイコン（任意） */}
                                 <div>
                                     <Label htmlFor='icon' className='text-sm font-semibold mb-1 block'>
-                                        アイコン（任意）
+                                        {t('dialogs.node.create.icon.label')}
                                     </Label>
                                     <div className='flex gap-2 items-center'>
                                         <div className='flex-1 border rounded-md p-2 flex items-center'>
@@ -266,7 +270,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                             </div>
                                             {!nodeIcon && (
                                                 <div className='text-sm text-muted-foreground ml-2'>
-                                                    アイコンが設定されていません（ノードタイプのアイコンが使用されます）
+                                                    {t('dialogs.node.create.icon.notSet')}
                                                 </div>
                                             )}
                                         </div>
@@ -275,7 +279,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                             size='icon'
                                             className='h-10 w-10'
                                             onClick={() => setIsUrlDialogOpen(true)}
-                                            title='画像URLを設定'
+                                            title={t('dialogs.nodeType.imageUrlTitle')}
                                         >
                                             <Link size={18} />
                                         </Button>
@@ -286,9 +290,9 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                                 size='sm'
                                                 onClick={handleClearIcon}
                                                 className='text-xs'
-                                                title='アイコンをクリア'
+                                                title={t('common.clear')}
                                             >
-                                                クリア
+                                                {t('common.clear')}
                                             </Button>
                                         )}
                                     </div>
@@ -297,7 +301,8 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                 {/* カスタムフィールド */}
                                 <div>
                                     <Label className='text-sm font-semibold mb-2 block'>
-                                        {selectedType.name}のフィールド
+                                        {selectedType.name}
+                                        {t('dialogs.node.create.fields.label')}
                                     </Label>
                                     <div className='space-y-3'>
                                         {customFields.map((field) => {
@@ -412,14 +417,14 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
 
                 <DialogFooter className='gap-2'>
                     <Button type='button' variant='outline' onClick={() => handleOpenChange(false)}>
-                        キャンセル
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         type='button'
                         onClick={handleCreate}
                         disabled={!selectedType || !nodeName.trim() || nodeTypes.length === 0}
                     >
-                        作成
+                        {t('dialogs.node.create.createButton')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

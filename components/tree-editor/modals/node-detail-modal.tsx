@@ -18,6 +18,7 @@ import { ImageUpload } from '../media/image-upload';
 import { AudioUpload } from '../media/audio-upload';
 import { TreeNode, NodeType, CustomField } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface NodeDetailModalProps {
     node: TreeNode;
@@ -31,12 +32,13 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     // nodeが存在しない場合は何も表示しない
     const [isEditing, setIsEditing] = useState(false);
     const [editedNode, setEditedNode] = useState<TreeNode>({ ...node });
-    const [originalNodeType, setOriginalNodeType] = useState<string | undefined>(node?.nodeType);
+
     const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
     const [urlValidationErrors, setUrlValidationErrors] = useState<{ [key: string]: string }>({});
     const [audioPlayers, setAudioPlayers] = useState<{ [key: string]: boolean }>({});
     const [audioErrors, setAudioErrors] = useState<{ [key: string]: string }>({});
     const audioRefs = useRef<{ [key: string]: HTMLAudioElement | null }>({});
+    const { t } = useI18n();
 
     // 現在のノードタイプ情報を取得
     const getCurrentNodeType = useCallback(() => {
@@ -48,7 +50,6 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     useEffect(() => {
         if (node && node.id) {
             setEditedNode({ ...node });
-            setOriginalNodeType(node.nodeType);
             setIsEditing(false);
             setUrlValidationErrors({});
             setAudioPlayers({});
@@ -70,7 +71,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
             editedNode.customFields?.forEach((field) => {
                 if (field.type === 'link' && field.value) {
                     if (!isValidUrl(field.value)) {
-                        errors[field.id] = '有効なURLを入力してください';
+                        errors[field.id] = t('dialogs.node.detail.validation.validUrl');
                         hasErrors = true;
                     }
                 }
@@ -87,7 +88,6 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
         } else {
             // 編集モードを開始
             setEditedNode({ ...node }); // 最新のノード情報で初期化
-            setOriginalNodeType(node.nodeType);
             setIsEditing(true);
         }
     };
@@ -234,7 +234,6 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
         } else {
             // モーダルを開くときに最新のノード情報で初期化
             setEditedNode({ ...node });
-            setOriginalNodeType(node.nodeType);
         }
         onOpenChange(open);
     };
@@ -330,7 +329,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     const handleAudioError = (fieldId: string) => {
         setAudioErrors((prev) => ({
             ...prev,
-            [fieldId]: '音声の読み込みに失敗しました。サポートされていない形式かもしれません。',
+            [fieldId]: t('dialogs.node.detail.audio.loadError'),
         }));
         setAudioPlayers((prev) => ({
             ...prev,
@@ -347,7 +346,9 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className='sm:max-w-md md:max-w-lg max-h-[90vh]'>
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? 'ノード詳細を編集' : 'ノード詳細'}</DialogTitle>
+                    <DialogTitle>
+                        {isEditing ? t('dialogs.node.detail.editTitle') : t('dialogs.node.detail.title')}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <ScrollArea className='max-h-[70vh] pr-4'>
@@ -356,11 +357,11 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                         {isEditing && (
                             <div className='mb-4'>
                                 <Label htmlFor='node-type' className='text-sm font-semibold mb-1 block'>
-                                    ノードタイプ
+                                    {t('dialogs.node.detail.typeLabel')}
                                 </Label>
                                 <Select value={editedNode.nodeType || ''} onValueChange={handleNodeTypeChange}>
                                     <SelectTrigger id='node-type'>
-                                        <SelectValue placeholder='タイプを選択' />
+                                        <SelectValue placeholder={t('dialogs.nodeType.typeNamePlaceholder')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {nodeTypes.map((type) => (
@@ -379,7 +380,9 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                         {/* ノードタイプの表示（閲覧モード） */}
                         {!isEditing && currentNodeType && (
                             <div className='mb-4'>
-                                <Label className='text-sm font-semibold mb-1 block'>ノードタイプ</Label>
+                                <Label className='text-sm font-semibold mb-1 block'>
+                                    {t('dialogs.node.detail.typeLabel')}
+                                </Label>
                                 <div className='p-2 bg-muted/50 rounded-md flex items-center'>
                                     <span className='text-xl mr-2'>{currentNodeType.icon}</span>
                                     <span>{currentNodeType.name}</span>
@@ -390,7 +393,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                         {/* 固定フィールド: ノード名 */}
                         <div className='mb-4'>
                             <Label htmlFor='node-name' className='text-sm font-semibold mb-1 block'>
-                                ノード名 <span className='text-red-500'>*</span>
+                                {t('dialogs.node.detail.nameLabel')} <span className='text-red-500'>*</span>
                             </Label>
                             {isEditing ? (
                                 <Input
@@ -407,7 +410,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                         {/* 固定フィールド: アイコン */}
                         <div className='mb-4'>
                             <Label htmlFor='icon' className='text-sm font-semibold mb-1 block'>
-                                アイコン（任意）
+                                {t('dialogs.node.detail.iconLabel')}
                             </Label>
                             {isEditing ? (
                                 <div className='flex gap-2 items-center'>
@@ -417,7 +420,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                         </div>
                                         {!displayIcon && (
                                             <div className='text-sm text-muted-foreground ml-2'>
-                                                アイコンが設定されていません（ノードタイプのアイコンが使用されます）
+                                                {t('dialogs.node.detail.iconNotSet')}
                                             </div>
                                         )}
                                     </div>
@@ -426,7 +429,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                         size='icon'
                                         className='h-10 w-10'
                                         onClick={() => setIsUrlDialogOpen(true)}
-                                        title='画像URLを設定'
+                                        title={t('dialogs.nodeType.imageUrlTitle')}
                                     >
                                         <Link size={18} />
                                     </Button>
@@ -437,9 +440,9 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                             size='sm'
                                             onClick={handleClearIcon}
                                             className='text-xs'
-                                            title='アイコンをクリア'
+                                            title={t('common.clear')}
                                         >
-                                            クリア
+                                            {t('common.clear')}
                                         </Button>
                                     )}
                                 </div>
@@ -461,14 +464,16 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                             )}
                                             <span className='text-sm text-muted-foreground'>
                                                 {node.icon
-                                                    ? 'カスタムアイコン'
+                                                    ? t('dialogs.node.detail.customIconText')
                                                     : currentNodeType
-                                                    ? `ノードタイプのアイコンを使用`
-                                                    : 'アイコンなし'}
+                                                    ? t('dialogs.node.detail.usingTypeIcon')
+                                                    : t('dialogs.node.detail.noIcon')}
                                             </span>
                                         </div>
                                     ) : (
-                                        <span className='text-sm text-muted-foreground'>設定なし</span>
+                                        <span className='text-sm text-muted-foreground'>
+                                            {t('dialogs.nodeType.noIcon')}
+                                        </span>
                                     )}
                                 </div>
                             )}
@@ -477,7 +482,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                         {/* カスタムフィールド */}
                         <div>
                             <div className='flex justify-between items-center mb-2'>
-                                <Label className='text-sm font-semibold'>カスタムフィールド</Label>
+                                <Label className='text-sm font-semibold'>{t('dialogs.node.detail.customFields')}</Label>
                                 {isEditing && !currentNodeType && (
                                     <Button
                                         variant='outline'
@@ -486,7 +491,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                         className='flex items-center text-xs h-7'
                                     >
                                         <PlusCircle size={14} className='mr-1' />
-                                        フィールド追加
+                                        {t('dialogs.node.detail.addField')}
                                     </Button>
                                 )}
                             </div>
@@ -507,7 +512,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                                             onChange={(e) =>
                                                                 updateCustomField(field.id, 'name', e.target.value)
                                                             }
-                                                            placeholder='フィールド名'
+                                                            placeholder={t('dialogs.nodeType.fieldNamePlaceholder')}
                                                             disabled={!!currentNodeType}
                                                         />
                                                         <Select
@@ -527,15 +532,29 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                                             disabled={!!currentNodeType}
                                                         >
                                                             <SelectTrigger className='w-[120px]'>
-                                                                <SelectValue placeholder='タイプ' />
+                                                                <SelectValue
+                                                                    placeholder={t('dialogs.nodeType.fieldTypeSelect')}
+                                                                />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value='text'>一行テキスト</SelectItem>
-                                                                <SelectItem value='textarea'>複数行テキスト</SelectItem>
-                                                                <SelectItem value='link'>リンク</SelectItem>
-                                                                <SelectItem value='youtube'>YouTube</SelectItem>
-                                                                <SelectItem value='image'>画像</SelectItem>
-                                                                <SelectItem value='audio'>音声</SelectItem>
+                                                                <SelectItem value='text'>
+                                                                    {t('dialogs.nodeType.fieldTypes.text')}
+                                                                </SelectItem>
+                                                                <SelectItem value='textarea'>
+                                                                    {t('dialogs.nodeType.fieldTypes.textarea')}
+                                                                </SelectItem>
+                                                                <SelectItem value='link'>
+                                                                    {t('dialogs.nodeType.fieldTypes.link')}
+                                                                </SelectItem>
+                                                                <SelectItem value='youtube'>
+                                                                    {t('dialogs.nodeType.fieldTypes.youtube')}
+                                                                </SelectItem>
+                                                                <SelectItem value='image'>
+                                                                    {t('dialogs.nodeType.fieldTypes.image')}
+                                                                </SelectItem>
+                                                                <SelectItem value='audio'>
+                                                                    {t('dialogs.nodeType.fieldTypes.audio')}
+                                                                </SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                         {field.type === 'textarea' ? (
@@ -740,7 +759,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                     </>
                                 ) : (
                                     <div className='text-center py-4 text-sm text-muted-foreground'>
-                                        カスタムフィールドはありません
+                                        {t('dialogs.node.detail.noCustomFields')}
                                     </div>
                                 )}
                             </div>
@@ -753,17 +772,17 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                         {isEditing ? (
                             <>
                                 <Save size={16} className='mr-2' />
-                                保存
+                                {t('dialogs.node.detail.saveButton')}
                             </>
                         ) : (
                             <>
                                 <Edit size={16} className='mr-2' />
-                                編集
+                                {t('dialogs.node.detail.editButton')}
                             </>
                         )}
                     </Button>
                     <Button type='button' variant='ghost' onClick={() => handleOpenChange(false)}>
-                        閉じる
+                        {t('dialogs.node.detail.closeButton')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
