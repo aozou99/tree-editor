@@ -676,7 +676,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                                                         className='text-blue-600 hover:underline flex items-center'
                                                                     >
                                                                         {field.value}
-                                                                        <ExternalLink size={14} className='ml-1' />
+                                                                        <ExternalLink size={14} />
                                                                     </a>
                                                                 ) : field.type === 'youtube' ? (
                                                                     <div className='mt-1'>

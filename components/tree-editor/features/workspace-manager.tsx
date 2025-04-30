@@ -194,11 +194,11 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                         <Button
                             variant='outline'
                             size='sm'
-                            className='h-9 px-2 sm:px-3 flex items-center gap-1'
+                            className='h-9 px-2 sm:px-3 flex items-center'
                             title={t('workspace.switch')}
                         >
-                            <FolderIcon size={16} className='sm:mr-1' />
-                            <span className='truncate max-w-[120px] hidden sm:inline'>{activeWorkspaceName}</span>
+                            <FolderIcon size={16} />
+                            <span className='truncate max-w-[120px] hidden md:inline'>{activeWorkspaceName}</span>
                             <ChevronDownIcon size={14} />
                         </Button>
                     </DropdownMenuTrigger>

@@ -109,7 +109,7 @@ export function TreeHeader({
                                 <DropdownMenuTrigger asChild>
                                     <Button variant='outline' size='sm' className='h-9'>
                                         <File size={16} />
-                                        <span>{t('header.file')}</span>
+                                        <span className='hidden md:inline'>{t('header.file')}</span>
                                         <ChevronDown size={14} />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -135,7 +135,7 @@ export function TreeHeader({
                                 <DropdownMenuTrigger asChild>
                                     <Button variant='outline' size='sm' className='h-9'>
                                         <Settings size={16} />
-                                        <span>{t('header.settings')}</span>
+                                        <span className='hidden md:inline'>{t('header.settings')}</span>
                                         <ChevronDown size={14} />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -155,7 +155,7 @@ export function TreeHeader({
 
                             <Button onClick={addRootNode} size='sm' className='h-9'>
                                 <Plus size={16} />
-                                <span>{t('header.addRootNode')}</span>
+                                <span className='hidden md:inline'>{t('header.addRootNode')}</span>
                             </Button>
                         </div>
                     </div>
