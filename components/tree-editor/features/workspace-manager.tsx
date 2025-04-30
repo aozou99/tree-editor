@@ -282,22 +282,6 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant='ghost'
-                                size='icon'
-                                className='h-9 w-9 ml-1'
-                                onClick={() => setIsCreateDialogOpen(true)}
-                            >
-                                <PlusIcon size={16} />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t('workspace.new')}</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
             </div>
 
             {/* 新規ワークスペース作成ダイアログ */}

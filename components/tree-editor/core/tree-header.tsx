@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Edit, Plus, RotateCcw, Download, Upload, BookTemplate, Settings } from 'lucide-react';
+import { ChevronDown, Edit, Plus, RotateCcw, Download, Upload, BookTemplate, Settings, File } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -108,8 +108,9 @@ export function TreeHeader({
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant='outline' size='sm' className='h-9'>
+                                        <File size={16} />
                                         <span>{t('header.file')}</span>
-                                        <ChevronDown size={14} className='ml-1' />
+                                        <ChevronDown size={14} />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align='end' className='w-56'>
@@ -133,8 +134,9 @@ export function TreeHeader({
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant='outline' size='sm' className='h-9'>
+                                        <Settings size={16} />
                                         <span>{t('header.settings')}</span>
-                                        <ChevronDown size={14} className='ml-1' />
+                                        <ChevronDown size={14} />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align='end' className='w-56'>
@@ -152,7 +154,7 @@ export function TreeHeader({
                             </DropdownMenu>
 
                             <Button onClick={addRootNode} size='sm' className='h-9'>
-                                <Plus size={16} className='mr-2' />
+                                <Plus size={16} />
                                 <span>{t('header.addRootNode')}</span>
                             </Button>
                         </div>
