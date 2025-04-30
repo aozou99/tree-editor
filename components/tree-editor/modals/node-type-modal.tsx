@@ -15,6 +15,7 @@ import { EmojiPicker } from '../media/emoji-picker';
 import { UrlInputDialog } from './url-input-dialog';
 import { NodeType, CustomFieldDefinition } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface NodeTypeModalProps {
     open: boolean;
@@ -37,6 +38,7 @@ export function NodeTypeModal({
     const [editingNodeType, setEditingNodeType] = useState<NodeType | null>(null);
     const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t } = useI18n();
 
     // 新しいノードタイプの作成を開始
     const handleAddNewType = () => {
@@ -205,13 +207,13 @@ export function NodeTypeModal({
         try {
             // ファイルサイズチェック (2MB以下)
             if (file.size > 2 * 1024 * 1024) {
-                alert('ファイルサイズは2MB以下にしてください');
+                alert(t('dialogs.nodeType.errors.fileSizeLimit'));
                 return;
             }
 
             // 画像ファイルかチェック
             if (!file.type.startsWith('image/')) {
-                alert('画像ファイルを選択してください');
+                alert(t('dialogs.nodeType.errors.imageFileOnly'));
                 return;
             }
 
@@ -221,8 +223,8 @@ export function NodeTypeModal({
                 icon: base64,
             });
         } catch (error) {
-            console.error('ファイルの読み込みに失敗しました:', error);
-            alert('ファイルの読み込みに失敗しました');
+            console.error(t('debug.fileReadError'), error);
+            alert(t('dialogs.nodeType.errors.fileReadError'));
         }
 
         // ファイル選択をリセット
@@ -244,7 +246,7 @@ export function NodeTypeModal({
             return (
                 <img
                     src={icon || '/placeholder.svg'}
-                    alt='アイコン'
+                    alt={t('dialogs.nodeType.icon')}
                     className='w-8 h-8 object-contain rounded-sm'
                     onError={(e) => {
                         e.currentTarget.src = '/exclamation-mark-in-nature.png';
@@ -255,7 +257,7 @@ export function NodeTypeModal({
             return (
                 <img
                     src={icon || '/placeholder.svg'}
-                    alt='アイコン'
+                    alt={t('dialogs.nodeType.icon')}
                     className='w-8 h-8 object-contain rounded-sm'
                     onError={(e) => {
                         e.currentTarget.src = '/exclamation-mark-in-nature.png';
@@ -271,7 +273,7 @@ export function NodeTypeModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className='sm:max-w-md md:max-w-lg max-h-[90vh] overflow-y-auto'>
                 <DialogHeader>
-                    <DialogTitle>ノードタイプ管理</DialogTitle>
+                    <DialogTitle>{t('dialogs.nodeType.title')}</DialogTitle>
                 </DialogHeader>
 
                 <div className='py-4'>
@@ -279,16 +281,16 @@ export function NodeTypeModal({
                         // ノードタイプ一覧の表示モード
                         <>
                             <div className='mb-4 flex justify-between items-center'>
-                                <Label className='text-lg font-semibold'>ノードタイプ一覧</Label>
+                                <Label className='text-lg font-semibold'>{t('dialogs.nodeType.typeList')}</Label>
                                 <Button variant='outline' size='sm' onClick={handleAddNewType}>
                                     <PlusCircle size={16} className='mr-2' />
-                                    新しいタイプを追加
+                                    {t('dialogs.nodeType.addNewType')}
                                 </Button>
                             </div>
 
                             {nodeTypes.length === 0 ? (
                                 <div className='text-center py-8 text-muted-foreground'>
-                                    ノードタイプがありません。新しいタイプを追加してください。
+                                    {t('dialogs.nodeType.noTypes')}
                                 </div>
                             ) : (
                                 <div className='space-y-3'>
@@ -305,7 +307,11 @@ export function NodeTypeModal({
                                                         </div>
                                                         <span className='font-medium'>{type.name}</span>
                                                         <span className='text-xs text-muted-foreground'>
-                                                            ({type.fieldDefinitions.length} フィールド)
+                                                            (
+                                                            {t('dialogs.nodeType.fieldsCount', {
+                                                                count: type.fieldDefinitions.length,
+                                                            })}
+                                                            )
                                                         </span>
                                                     </div>
                                                     <div className='flex space-x-1'>
@@ -338,7 +344,7 @@ export function NodeTypeModal({
                         <>
                             <div className='mb-4'>
                                 <Label htmlFor='node-type-name' className='text-sm font-semibold mb-1 block'>
-                                    タイプ名 <span className='text-red-500'>*</span>
+                                    {t('dialogs.nodeType.typeNameRequired')}
                                 </Label>
                                 <Input
                                     id='node-type-name'
@@ -346,13 +352,13 @@ export function NodeTypeModal({
                                     onChange={(e) =>
                                         setEditingNodeType((prev) => (prev ? { ...prev, name: e.target.value } : null))
                                     }
-                                    placeholder='例: 社員、プロジェクト、タスクなど'
+                                    placeholder={t('dialogs.nodeType.typeNamePlaceholder')}
                                     className='w-full'
                                 />
                             </div>
 
                             <div className='mb-6'>
-                                <Label className='text-sm font-semibold mb-1 block'>アイコン</Label>
+                                <Label className='text-sm font-semibold mb-1 block'>{t('dialogs.nodeType.icon')}</Label>
                                 <div className='flex gap-2 items-center'>
                                     <div className='flex-1 border rounded-md p-2 flex items-center'>
                                         <div className='w-8 h-8 flex items-center justify-center'>
@@ -360,7 +366,7 @@ export function NodeTypeModal({
                                         </div>
                                         {!editingNodeType?.icon && (
                                             <div className='text-sm text-muted-foreground ml-2'>
-                                                アイコンが設定されていません
+                                                {t('dialogs.nodeType.noIcon')}
                                             </div>
                                         )}
                                     </div>
@@ -369,7 +375,7 @@ export function NodeTypeModal({
                                         size='icon'
                                         className='h-10 w-10'
                                         onClick={() => setIsUrlDialogOpen(true)}
-                                        title='画像URLを設定'
+                                        title={t('dialogs.nodeType.imageUrlTitle')}
                                     >
                                         <Link size={18} />
                                     </Button>
@@ -378,7 +384,7 @@ export function NodeTypeModal({
                                         size='icon'
                                         className='h-10 w-10'
                                         onClick={handleOpenFileSelector}
-                                        title='画像ファイルをアップロード'
+                                        title={t('dialogs.nodeType.uploadImageTitle')}
                                     >
                                         <Upload size={18} />
                                     </Button>
@@ -398,7 +404,7 @@ export function NodeTypeModal({
 
                             <div className='mb-4'>
                                 <div className='flex justify-between items-center mb-2'>
-                                    <Label className='text-sm font-semibold'>フィールド定義</Label>
+                                    <Label className='text-sm font-semibold'>{t('dialogs.nodeType.fields')}</Label>
                                     <Button
                                         variant='outline'
                                         size='sm'
@@ -406,13 +412,13 @@ export function NodeTypeModal({
                                         className='flex items-center text-xs h-7'
                                     >
                                         <PlusCircle size={14} className='mr-1' />
-                                        フィールド追加
+                                        {t('dialogs.nodeType.addField')}
                                     </Button>
                                 </div>
 
                                 {editingNodeType?.fieldDefinitions.length === 0 ? (
                                     <div className='text-center py-4 text-sm text-muted-foreground'>
-                                        フィールドがありません。追加してください。
+                                        {t('dialogs.nodeType.noFields')}
                                     </div>
                                 ) : (
                                     <div className='space-y-3'>
@@ -427,7 +433,7 @@ export function NodeTypeModal({
                                                             htmlFor={`field-name-${field.id}`}
                                                             className='text-xs block mb-1'
                                                         >
-                                                            フィールド名
+                                                            {t('dialogs.nodeType.fieldName')}
                                                         </Label>
                                                         <Input
                                                             id={`field-name-${field.id}`}
@@ -435,7 +441,7 @@ export function NodeTypeModal({
                                                             onChange={(e) =>
                                                                 handleUpdateField(field.id, 'name', e.target.value)
                                                             }
-                                                            placeholder='例: 役職、部署など'
+                                                            placeholder={t('dialogs.nodeType.fieldNamePlaceholder')}
                                                             className='h-8 text-sm'
                                                         />
                                                     </div>
@@ -444,7 +450,7 @@ export function NodeTypeModal({
                                                             htmlFor={`field-type-${field.id}`}
                                                             className='text-xs block mb-1'
                                                         >
-                                                            タイプ
+                                                            {t('dialogs.nodeType.fieldType')}
                                                         </Label>
                                                         <Select
                                                             value={field.type}
@@ -463,15 +469,29 @@ export function NodeTypeModal({
                                                             }
                                                         >
                                                             <SelectTrigger className='h-8 text-sm'>
-                                                                <SelectValue placeholder='タイプを選択' />
+                                                                <SelectValue
+                                                                    placeholder={t('dialogs.nodeType.fieldTypeSelect')}
+                                                                />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value='text'>一行テキスト</SelectItem>
-                                                                <SelectItem value='textarea'>複数行テキスト</SelectItem>
-                                                                <SelectItem value='link'>リンク</SelectItem>
-                                                                <SelectItem value='youtube'>YouTube</SelectItem>
-                                                                <SelectItem value='image'>画像</SelectItem>
-                                                                <SelectItem value='audio'>音声</SelectItem>
+                                                                <SelectItem value='text'>
+                                                                    {t('dialogs.nodeType.fieldTypes.text')}
+                                                                </SelectItem>
+                                                                <SelectItem value='textarea'>
+                                                                    {t('dialogs.nodeType.fieldTypes.textarea')}
+                                                                </SelectItem>
+                                                                <SelectItem value='link'>
+                                                                    {t('dialogs.nodeType.fieldTypes.link')}
+                                                                </SelectItem>
+                                                                <SelectItem value='youtube'>
+                                                                    {t('dialogs.nodeType.fieldTypes.youtube')}
+                                                                </SelectItem>
+                                                                <SelectItem value='image'>
+                                                                    {t('dialogs.nodeType.fieldTypes.image')}
+                                                                </SelectItem>
+                                                                <SelectItem value='audio'>
+                                                                    {t('dialogs.nodeType.fieldTypes.audio')}
+                                                                </SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
@@ -490,7 +510,7 @@ export function NodeTypeModal({
                                                             }
                                                             className='mr-1 h-3 w-3'
                                                         />
-                                                        必須
+                                                        {t('dialogs.nodeType.required')}
                                                     </label>
                                                     <Button
                                                         variant='ghost'
@@ -513,16 +533,16 @@ export function NodeTypeModal({
                 <DialogFooter className='sm:justify-between'>
                     {editMode === 'view' ? (
                         <Button type='button' variant='outline' onClick={() => onOpenChange(false)}>
-                            閉じる
+                            {t('common.close')}
                         </Button>
                     ) : (
                         <div className='flex gap-2 w-full justify-between'>
                             <Button type='button' variant='ghost' onClick={handleCancelEdit}>
-                                キャンセル
+                                {t('common.cancel')}
                             </Button>
                             <Button type='button' onClick={handleSaveType}>
                                 <Save size={16} className='mr-2' />
-                                保存
+                                {t('common.save')}
                             </Button>
                         </div>
                     )}

@@ -142,7 +142,7 @@ function TreeEditor() {
 
         const workspace: Workspace = {
             id: activeWorkspaceId,
-            name: loadWorkspace(activeWorkspaceId)?.name || '無題のワークスペース',
+            name: loadWorkspace(activeWorkspaceId)?.name || t('workspace.untitledName'),
             createdAt: loadWorkspace(activeWorkspaceId)?.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             tree,
@@ -151,7 +151,7 @@ function TreeEditor() {
         };
 
         debouncedSaveWorkspace(workspace);
-    }, [activeWorkspaceId, tree, nodeTypes, treeTitle, debouncedSaveWorkspace]);
+    }, [activeWorkspaceId, tree, nodeTypes, treeTitle, debouncedSaveWorkspace, t]);
 
     // ワークスペースを切り替える関数
     const handleWorkspaceChange = (workspace: Workspace) => {
@@ -171,7 +171,7 @@ function TreeEditor() {
         const newWorkspace = createWorkspace(name, {
             tree: sample.tree,
             nodeTypes: sample.nodeTypes,
-            treeTitle: `${name}のツリー`,
+            treeTitle: t('workspace.defaultTreeTitle', { name }),
         });
 
         // 作成したワークスペースを表示
@@ -193,7 +193,7 @@ function TreeEditor() {
         // ワークスペースが存在しない場合は初期ワークスペースを作成
         if (workspaces.length === 0) {
             const sample = getSampleById('organization') || organizationSample;
-            const newWorkspace = createWorkspace('デフォルトワークスペース', {
+            const newWorkspace = createWorkspace(t('workspace.defaultName'), {
                 tree: sample.tree,
                 nodeTypes: sample.nodeTypes,
                 treeTitle: '組織図',
@@ -215,7 +215,7 @@ function TreeEditor() {
         }
 
         setIsWorkspaceLoading(false);
-    }, []);
+    }, [t]);
 
     // ツリーデータが変更されたときに自動保存
     useEffect(() => {
@@ -308,7 +308,7 @@ function TreeEditor() {
                 duration: 3000,
             });
         } catch (error) {
-            console.error('エクスポート中にエラーが発生しました:', error);
+            console.error(t('debug.exportError'), error);
             toast({
                 title: t('toast.exportError'),
                 description: t('toast.exportError'),
@@ -338,8 +338,8 @@ function TreeEditor() {
                 setImportError(null);
                 setIsImportDialogOpen(true);
             } catch (error) {
-                console.error('ファイルの読み込みに失敗しました:', error);
-                setImportError('ファイルの読み込みに失敗しました');
+                console.error(t('debug.fileReadError'), error);
+                setImportError(t('dialogs.import.errors.fileReadError'));
                 toast({
                     title: t('toast.importError'),
                     description: t('toast.importError'),
@@ -349,7 +349,7 @@ function TreeEditor() {
             }
         };
         reader.onerror = () => {
-            setImportError('ファイルの読み込みに失敗しました');
+            setImportError(t('dialogs.import.errors.fileReadError'));
             toast({
                 title: t('toast.importError'),
                 description: t('toast.importError'),
@@ -409,7 +409,7 @@ function TreeEditor() {
                 duration: 3000,
             });
         } catch (error) {
-            console.error('インポート中にエラーが発生しました:', error);
+            console.error(t('debug.importError'), error);
             setImportError(t('dialogs.import.errors.parseError'));
             toast({
                 title: t('toast.importError'),
@@ -701,8 +701,8 @@ function TreeEditor() {
                         {importError && <p className='text-red-500 text-sm'>{importError}</p>}
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setImportData('')}>キャンセル</AlertDialogCancel>
-                        <AlertDialogAction onClick={executeImport}>インポート</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setImportData('')}>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={executeImport}>{t('common.import')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

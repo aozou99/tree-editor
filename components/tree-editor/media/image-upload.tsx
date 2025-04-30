@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageIcon, Upload, Link, X } from 'lucide-react';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface ImageUploadProps {
     value: string;
@@ -19,6 +20,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
     const [isUrlMode, setIsUrlMode] = useState(value && !isBase64Image(value));
     const [imageUrl, setImageUrl] = useState(isUrlMode ? value : '');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t } = useI18n();
 
     // ファイルをBase64に変換
     const convertFileToBase64 = (file: File): Promise<string> => {
@@ -38,13 +40,13 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         try {
             // ファイルサイズチェック (5MB以下)
             if (file.size > 5 * 1024 * 1024) {
-                alert('ファイルサイズは5MB以下にしてください');
+                alert(t('media.image.errors.fileSizeLimit'));
                 return;
             }
 
             // 画像ファイルかチェック
             if (!file.type.startsWith('image/')) {
-                alert('画像ファイルを選択してください');
+                alert(t('media.image.errors.imageFileOnly'));
                 return;
             }
 
@@ -52,8 +54,8 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
             onChange(base64);
             setIsUrlMode(false);
         } catch (error) {
-            console.error('ファイルの読み込みに失敗しました:', error);
-            alert('ファイルの読み込みに失敗しました');
+            console.error(t('debug.fileReadError'), error);
+            alert(t('media.image.errors.fileReadError'));
         }
 
         // ファイル選択をリセット（同じファイルを再選択できるように）
@@ -90,7 +92,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
             <div className='relative mt-2 border rounded-md overflow-hidden'>
                 <img
                     src={value || '/placeholder.svg'}
-                    alt='プレビュー'
+                    alt={t('media.image.preview')}
                     className='max-h-[200px] w-auto mx-auto object-contain'
                     onError={(e) => {
                         e.currentTarget.src = '/exclamation-mark-in-nature.png';
@@ -125,7 +127,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                             className='flex-1'
                         >
                             <Upload size={16} className='mr-2' />
-                            ファイル
+                            {t('media.image.fileTab')}
                         </Button>
                         <Button
                             type='button'
@@ -135,7 +137,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                             className='flex-1'
                         >
                             <Link size={16} className='mr-2' />
-                            URL
+                            {t('media.image.urlTab')}
                         </Button>
                     </div>
 
@@ -143,13 +145,13 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                         <div className='flex gap-2'>
                             <Input
                                 type='url'
-                                placeholder='https://example.com/image.jpg'
+                                placeholder={t('media.image.urlPlaceholder')}
                                 value={imageUrl}
                                 onChange={handleUrlChange}
                                 className='flex-1'
                             />
                             <Button type='button' size='sm' onClick={handleUrlSubmit} disabled={!imageUrl.trim()}>
-                                設定
+                                {t('media.image.set')}
                             </Button>
                         </div>
                     ) : (
@@ -159,8 +161,8 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                                 className='flex flex-col items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground'
                             >
                                 <ImageIcon size={24} />
-                                <span>クリックして画像を選択</span>
-                                <span className='text-xs'>または画像をドラッグ＆ドロップ</span>
+                                <span>{t('media.image.clickToSelect')}</span>
+                                <span className='text-xs'>{t('media.image.dragAndDrop')}</span>
                             </Label>
                             <Input
                                 ref={fileInputRef}
