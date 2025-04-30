@@ -21,6 +21,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditIcon, Trash2Icon, CheckIcon, FolderIcon, PlusIcon, ChevronDownIcon } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
 import type { Workspace } from '@/components/tree-editor/utils/workspace-utils';
 import {
@@ -48,6 +49,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
     const [deleteWorkspaceId, setDeleteWorkspaceId] = useState<string | null>(null);
     const [deleteWorkspaceName, setDeleteWorkspaceName] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const { t } = useI18n();
 
     // ワークスペース一覧を読み込む
     const loadWorkspaces = () => {
@@ -75,8 +77,8 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             setIsDropdownOpen(false);
         } else {
             toast({
-                title: 'エラー',
-                description: 'ワークスペースの読み込みに失敗しました',
+                title: t('common.error'),
+                description: t('workspace.errors.loadFailed'),
                 variant: 'destructive',
             });
         }
@@ -106,8 +108,8 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
 
         if (renameWorkspace(renameWorkspaceId, renameWorkspaceName)) {
             toast({
-                title: '成功',
-                description: 'ワークスペースの名前を変更しました',
+                title: t('common.success'),
+                description: t('workspace.success.renamed'),
             });
 
             // アクティブなワークスペースの場合、表示を更新
@@ -119,8 +121,8 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             }
         } else {
             toast({
-                title: 'エラー',
-                description: 'ワークスペースの名前変更に失敗しました',
+                title: t('common.error'),
+                description: t('workspace.errors.renameFailed'),
                 variant: 'destructive',
             });
         }
@@ -145,8 +147,8 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
 
         if (deleteWorkspace(deleteWorkspaceId)) {
             toast({
-                title: '成功',
-                description: 'ワークスペースを削除しました',
+                title: t('common.success'),
+                description: t('workspace.success.deleted'),
             });
 
             // ワークスペース一覧を更新
@@ -168,8 +170,8 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             }
         } else {
             toast({
-                title: 'エラー',
-                description: 'ワークスペースの削除に失敗しました',
+                title: t('common.error'),
+                description: t('workspace.errors.deleteFailed'),
                 variant: 'destructive',
             });
         }
@@ -181,8 +183,8 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
 
     // 現在のワークスペース名を取得
     const activeWorkspaceName = activeWorkspaceId
-        ? workspaces.find((ws) => ws.id === activeWorkspaceId)?.name || 'ワークスペース'
-        : 'ワークスペースなし';
+        ? workspaces.find((ws) => ws.id === activeWorkspaceId)?.name || t('workspace.untitledName')
+        : t('workspace.noWorkspace');
 
     return (
         <>
@@ -193,7 +195,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                             variant='outline'
                             size='sm'
                             className='h-9 px-2 sm:px-3 flex items-center gap-1'
-                            title='ワークスペースを切り替え'
+                            title={t('workspace.switch')}
                         >
                             <FolderIcon size={16} className='sm:mr-1' />
                             <span className='truncate max-w-[120px] hidden sm:inline'>{activeWorkspaceName}</span>
@@ -236,7 +238,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                                             <EditIcon size={12} />
                                                         </Button>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side='left'>名前を変更</TooltipContent>
+                                                    <TooltipContent side='left'>{t('workspace.rename')}</TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
 
@@ -256,7 +258,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                                             <Trash2Icon size={12} />
                                                         </Button>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side='left'>削除</TooltipContent>
+                                                    <TooltipContent side='left'>{t('workspace.delete')}</TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
                                         </div>
@@ -265,7 +267,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                 <DropdownMenuSeparator />
                             </>
                         ) : (
-                            <div className='py-2 px-2 text-sm text-muted-foreground'>ワークスペースがありません</div>
+                            <div className='py-2 px-2 text-sm text-muted-foreground'>{t('workspace.noWorkspaces')}</div>
                         )}
                         <DropdownMenuItem
                             className='py-2'
@@ -276,7 +278,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                             }}
                         >
                             <PlusIcon size={14} className='mr-2' />
-                            <span>新しいワークスペース</span>
+                            <span>{t('workspace.new')}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -293,7 +295,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                 <PlusIcon size={16} />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>新しいワークスペース</TooltipContent>
+                        <TooltipContent>{t('workspace.new')}</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             </div>
@@ -302,24 +304,24 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogContent className='sm:max-w-md'>
                     <DialogHeader>
-                        <DialogTitle>新しいワークスペース</DialogTitle>
-                        <DialogDescription>新しいワークスペースを作成します。</DialogDescription>
+                        <DialogTitle>{t('workspace.createTitle')}</DialogTitle>
+                        <DialogDescription>{t('workspace.createDescription')}</DialogDescription>
                     </DialogHeader>
                     <div className='py-4'>
                         <Input
                             value={newWorkspaceName}
                             onChange={(e) => setNewWorkspaceName(e.target.value)}
-                            placeholder='ワークスペース名'
+                            placeholder={t('workspace.namePlaceholder')}
                             className='w-full'
                             autoFocus
                         />
                     </div>
                     <DialogFooter>
                         <Button variant='outline' onClick={() => setIsCreateDialogOpen(false)}>
-                            キャンセル
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleCreateWorkspace} disabled={!newWorkspaceName.trim()}>
-                            作成
+                            {t('workspace.create')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -329,24 +331,24 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
                 <DialogContent className='sm:max-w-md'>
                     <DialogHeader>
-                        <DialogTitle>ワークスペース名の変更</DialogTitle>
-                        <DialogDescription>ワークスペースの名前を変更します。</DialogDescription>
+                        <DialogTitle>{t('workspace.renameTitle')}</DialogTitle>
+                        <DialogDescription>{t('workspace.renameDescription')}</DialogDescription>
                     </DialogHeader>
                     <div className='py-4'>
                         <Input
                             value={renameWorkspaceName}
                             onChange={(e) => setRenameWorkspaceName(e.target.value)}
-                            placeholder='新しいワークスペース名'
+                            placeholder={t('workspace.newNamePlaceholder')}
                             className='w-full'
                             autoFocus
                         />
                     </div>
                     <DialogFooter>
                         <Button variant='outline' onClick={() => setIsRenameDialogOpen(false)}>
-                            キャンセル
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleRenameWorkspace} disabled={!renameWorkspaceName.trim()}>
-                            変更
+                            {t('workspace.change')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -356,22 +358,20 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <DialogContent className='sm:max-w-md'>
                     <DialogHeader>
-                        <DialogTitle>ワークスペースの削除</DialogTitle>
+                        <DialogTitle>{t('workspace.deleteTitle')}</DialogTitle>
                         <DialogDescription>
-                            ワークスペース「{deleteWorkspaceName}」を削除します。 この操作は元に戻せません。
+                            {t('workspace.deleteDescription', { name: deleteWorkspaceName })}
                         </DialogDescription>
                     </DialogHeader>
                     <div className='py-4'>
-                        <p className='text-red-500 font-medium'>
-                            削除すると、このワークスペースのすべてのデータが失われます。
-                        </p>
+                        <p className='text-red-500 font-medium'>{t('workspace.deleteWarning')}</p>
                     </div>
                     <DialogFooter>
                         <Button variant='outline' onClick={() => setIsDeleteDialogOpen(false)}>
-                            キャンセル
+                            {t('common.cancel')}
                         </Button>
                         <Button variant='destructive' onClick={handleDeleteWorkspace}>
-                            削除
+                            {t('workspace.delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
