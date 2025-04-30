@@ -369,7 +369,7 @@ function TreeEditor() {
     const executeImport = () => {
         try {
             if (!importData) {
-                setImportError('インポートするデータがありません');
+                setImportError(t('dialogs.import.errors.noData'));
                 return;
             }
 
@@ -378,7 +378,11 @@ function TreeEditor() {
             // データの検証
             const validation = validateImportData(parsedData);
             if (!validation.valid) {
-                setImportError(validation.error || '無効なデータ形式です');
+                setImportError(
+                    validation.error
+                        ? t(`dialogs.import.errors.${validation.error}`)
+                        : t('dialogs.import.errors.invalidFormat'),
+                );
                 return;
             }
 
@@ -406,7 +410,7 @@ function TreeEditor() {
             });
         } catch (error) {
             console.error('インポート中にエラーが発生しました:', error);
-            setImportError('インポートに失敗しました。JSONの形式が正しくありません。');
+            setImportError(t('dialogs.import.errors.parseError'));
             toast({
                 title: t('toast.importError'),
                 description: t('toast.importError'),

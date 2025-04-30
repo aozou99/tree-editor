@@ -10,33 +10,41 @@ export interface TreeExportData {
     exportDate: string;
 }
 
+// エラーキー型定義
+export type ImportErrorKey =
+    | 'invalidFormat'
+    | 'noTreeData'
+    | 'noNodeTypes'
+    | 'invalidNodeStructure'
+    | 'invalidNodeTypeStructure';
+
 // データの検証
-export function validateImportData(data: any): { valid: boolean; error?: string } {
+export function validateImportData(data: any): { valid: boolean; error?: ImportErrorKey } {
     // 基本構造のチェック
     if (!data || typeof data !== 'object') {
-        return { valid: false, error: '無効なデータ形式です' };
+        return { valid: false, error: 'invalidFormat' };
     }
 
     // 必須フィールドのチェック
     if (!data.tree || !Array.isArray(data.tree)) {
-        return { valid: false, error: 'ツリーデータが見つかりません' };
+        return { valid: false, error: 'noTreeData' };
     }
 
     if (!data.nodeTypes || !Array.isArray(data.nodeTypes)) {
-        return { valid: false, error: 'ノードタイプデータが見つかりません' };
+        return { valid: false, error: 'noNodeTypes' };
     }
 
     // ツリーノードの構造チェック
     for (const node of data.tree) {
         if (!node.id || !node.name || !Array.isArray(node.children)) {
-            return { valid: false, error: '無効なノード構造が含まれています' };
+            return { valid: false, error: 'invalidNodeStructure' };
         }
     }
 
     // ノードタイプの構造チェック
     for (const type of data.nodeTypes) {
         if (!type.id || !type.name || !Array.isArray(type.fieldDefinitions)) {
-            return { valid: false, error: '無効なノードタイプ構造が含まれています' };
+            return { valid: false, error: 'invalidNodeTypeStructure' };
         }
     }
 

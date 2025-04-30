@@ -75,6 +75,16 @@ export const ja = {
             description: 'JSON形式のツリーデータをインポートします。現在のデータは上書きされます。',
             jsonData: 'JSONデータ',
             placeholder: 'ここにJSONデータを貼り付けてください',
+            errors: {
+                noData: 'インポートするデータがありません',
+                invalidFormat: '無効なデータ形式です',
+                parseError: 'インポートに失敗しました。JSONの形式が正しくありません。',
+                fileReadError: 'ファイルの読み込みに失敗しました',
+                noTreeData: 'ツリーデータが見つかりません',
+                noNodeTypes: 'ノードタイプデータが見つかりません',
+                invalidNodeStructure: '無効なノード構造が含まれています',
+                invalidNodeTypeStructure: '無効なノードタイプ構造が含まれています',
+            },
         },
     },
 };

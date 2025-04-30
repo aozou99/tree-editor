@@ -75,6 +75,16 @@ export const en = {
             description: 'Import tree data in JSON format. Current data will be overwritten.',
             jsonData: 'JSON Data',
             placeholder: 'Paste JSON data here',
+            errors: {
+                noData: 'No data to import',
+                invalidFormat: 'Invalid data format',
+                parseError: 'Import failed. JSON format is incorrect.',
+                fileReadError: 'Failed to read the file',
+                noTreeData: 'Tree data not found',
+                noNodeTypes: 'Node type data not found',
+                invalidNodeStructure: 'Invalid node structure included',
+                invalidNodeTypeStructure: 'Invalid node type structure included',
+            },
         },
     },
 };
