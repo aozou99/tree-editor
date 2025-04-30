@@ -1,11 +1,18 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
-export const metadata: Metadata = {
-    title: 'v0 App',
-    description: 'Created with v0',
-    generator: 'v0.dev',
+const descriptions = {
+    ja: 'NodeViewは、テキスト・画像・動画・音声など多様なノードを自由に定義・追加し、家系図や組織図、ジャンル分類など様々な情報を体系的に整理・公開できるキャッチーで柔軟なノードビューツールです。',
+    en: 'NodeView is a catchy and flexible node viewer tool that lets you freely define and add various nodes such as text, images, videos, and audio, helping you systematically organize and publish information like family trees, org charts, and genre classifications.',
 };
+
+export async function generateMetadata({ params }: { params: { locale?: string } }): Promise<Metadata> {
+    const locale = params?.locale === 'en' ? 'en' : 'ja';
+    return {
+        title: 'NodeView',
+        description: descriptions[locale],
+    };
+}
 
 export default function RootLayout({
     children,
