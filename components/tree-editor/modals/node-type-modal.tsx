@@ -22,18 +22,9 @@ interface NodeTypeModalProps {
     onOpenChange: (open: boolean) => void;
     nodeTypes: NodeType[];
     onSaveNodeTypes: (nodeTypes: NodeType[]) => void;
-    currentNodeType: NodeType | null;
-    onSelectNodeType: (nodeType: NodeType | null) => void;
 }
 
-export function NodeTypeModal({
-    open,
-    onOpenChange,
-    nodeTypes,
-    onSaveNodeTypes,
-    currentNodeType,
-    onSelectNodeType,
-}: NodeTypeModalProps) {
+export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }: NodeTypeModalProps) {
     const [editMode, setEditMode] = useState<'view' | 'edit' | 'new'>('view');
     const [editingNodeType, setEditingNodeType] = useState<NodeType | null>(null);
     const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
@@ -156,12 +147,6 @@ export function NodeTypeModal({
         setEditingNodeType(null);
     };
 
-    // ノードタイプの選択
-    const handleSelectType = (type: NodeType) => {
-        onSelectNodeType(type);
-        onOpenChange(false);
-    };
-
     // アイコンの更新（絵文字）
     const handleUpdateIcon = (emoji: string) => {
         if (editingNodeType) {
@@ -238,7 +223,6 @@ export function NodeTypeModal({
         return icon?.startsWith && icon?.startsWith('http');
     };
 
-    // renderIconPreview 関数を修正して、アイコンが重複表示されないようにします
     const renderIconPreview = (icon?: string) => {
         if (!icon) return null;
 
@@ -295,13 +279,14 @@ export function NodeTypeModal({
                             ) : (
                                 <div className='space-y-3'>
                                     {nodeTypes.map((type) => (
-                                        <Card key={type.id} className='overflow-hidden'>
+                                        <Card
+                                            key={type.id}
+                                            className='overflow-hidden'
+                                            onClick={() => handleEditType(type)}
+                                        >
                                             <CardContent className='p-3'>
                                                 <div className='flex justify-between items-center'>
-                                                    <div
-                                                        className='flex items-center space-x-2 cursor-pointer'
-                                                        onClick={() => handleSelectType(type)}
-                                                    >
+                                                    <div className='flex items-center space-x-2 cursor-pointer'>
                                                         <div className='flex items-center justify-center w-8 h-8'>
                                                             {renderIconPreview(type.icon)}
                                                         </div>

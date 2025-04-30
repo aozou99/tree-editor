@@ -62,7 +62,7 @@ export const en = {
         noWorkspaces: 'No workspaces',
         defaultName: 'Default Workspace',
         untitledName: 'Untitled Workspace',
-        defaultTreeTitle: "{name}'s Tree",
+        defaultTreeTitle: "{{name}}'s Tree",
         switch: 'Switch Workspace',
         noWorkspace: 'No Workspace',
         createTitle: 'Create New Workspace',
@@ -74,7 +74,7 @@ export const en = {
         newNamePlaceholder: 'New workspace name',
         change: 'Change',
         deleteTitle: 'Delete Workspace',
-        deleteDescription: 'Delete workspace "{name}". This action cannot be undone.',
+        deleteDescription: 'Delete workspace "{{name}}". This action cannot be undone.',
         deleteWarning: 'When deleted, all data in this workspace will be lost.',
         defaultTreeName: 'New Tree',
         errors: {
@@ -147,7 +147,7 @@ export const en = {
             addNewType: 'Add New Type',
             typeList: 'Node Type List',
             noTypes: 'No node types. Please add a new type.',
-            fieldsCount: '{count} fields',
+            fieldsCount: '{{count}} fields',
             errors: {
                 fileSizeLimit: 'File size must be less than 2MB',
                 imageFileOnly: 'Please select an image file',

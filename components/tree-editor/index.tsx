@@ -662,8 +662,6 @@ function TreeEditor() {
                 onOpenChange={setIsNodeTypeModalOpen}
                 nodeTypes={nodeTypes}
                 onSaveNodeTypes={setNodeTypes}
-                currentNodeType={selectedNodeType}
-                onSelectNodeType={setSelectedNodeType}
             />
 
             {/* ノード作成モーダル */}

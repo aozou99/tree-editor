@@ -147,7 +147,7 @@ export const ja = {
             addNewType: '新規タイプ追加',
             typeList: 'ノードタイプ一覧',
             noTypes: 'ノードタイプがありません。新しいタイプを追加してください。',
-            fieldsCount: '{count}個のフィールド',
+            fieldsCount: '{{count}}個のフィールド',
             errors: {
                 fileSizeLimit: 'ファイルサイズは2MB未満にしてください',
                 imageFileOnly: '画像ファイルを選択してください',
