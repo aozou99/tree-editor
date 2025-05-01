@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { validateImportData, createExportData } from '@/components/tree-editor/utils/tree-data-utils';
@@ -278,7 +279,7 @@ function TreeEditor() {
         });
     };
 
-    // ツリーデータをJSONとしてエクスポート
+    // ツリーデータをJSONとしてエクスポーネント
     const exportTreeData = () => {
         try {
             // エクスポートするデータを準備
@@ -661,7 +662,92 @@ function TreeEditor() {
                 open={isNodeTypeModalOpen}
                 onOpenChange={setIsNodeTypeModalOpen}
                 nodeTypes={nodeTypes}
-                onSaveNodeTypes={setNodeTypes}
+                onSaveNodeTypes={(updatedNodeTypes, fieldChangeInfo) => {
+                    // ノードタイプの更新
+                    setNodeTypes(updatedNodeTypes);
+                    
+                    // フィールド変更情報がある場合は既存ノードに変更を反映
+                    if (fieldChangeInfo) {
+                        const { nodeTypeId, fieldChanges } = fieldChangeInfo;
+                        
+                        // 対象のノードタイプを持つすべてのノードを特定して更新
+                        const updateNodeCustomFields = (nodes: TreeNode[]): TreeNode[] => {
+                            return nodes.map(node => {
+                                // このノードが対象のノードタイプを持つかチェック
+                                const needsUpdate = node.nodeType === nodeTypeId;
+                                
+                                // 子ノードも再帰的に更新
+                                const updatedChildren = node.children.length > 0 
+                                    ? updateNodeCustomFields(node.children) 
+                                    : node.children;
+                                
+                                // このノードが対象でない場合は子ノードだけ更新
+                                if (!needsUpdate) {
+                                    return { ...node, children: updatedChildren };
+                                }
+                                
+                                // このノードのカスタムフィールドを更新
+                                let updatedCustomFields = node.customFields ? [...node.customFields] : [];
+                                
+                                // 1. 削除されたフィールドを除去
+                                if (fieldChanges.removed.length > 0) {
+                                    updatedCustomFields = updatedCustomFields.filter(
+                                        field => !fieldChanges.removed.includes(field.fieldId || field.id)
+                                    );
+                                }
+                                
+                                // 2. 新規追加されたフィールドを追加
+                                fieldChanges.added.forEach(newField => {
+                                    updatedCustomFields.push({
+                                        id: uuidv4(),
+                                        fieldId: newField.id,
+                                        name: newField.name,
+                                        type: newField.type,
+                                        value: '',
+                                    });
+                                });
+                                
+                                // 3. 名前変更されたフィールドを更新
+                                fieldChanges.renamed.forEach(rename => {
+                                    const fieldIndex = updatedCustomFields.findIndex(
+                                        f => (f.fieldId || f.id) === rename.id
+                                    );
+                                    if (fieldIndex !== -1) {
+                                        updatedCustomFields[fieldIndex] = {
+                                            ...updatedCustomFields[fieldIndex],
+                                            name: rename.newName
+                                        };
+                                    }
+                                });
+                                
+                                // 4. タイプ変更されたフィールドを更新
+                                fieldChanges.typeChanged.forEach(typeChange => {
+                                    const fieldIndex = updatedCustomFields.findIndex(
+                                        f => (f.fieldId || f.id) === typeChange.id
+                                    );
+                                    if (fieldIndex !== -1) {
+                                        updatedCustomFields[fieldIndex] = {
+                                            ...updatedCustomFields[fieldIndex],
+                                            type: typeChange.newType as "text" | "textarea" | "link" | "youtube" | "image" | "audio",
+                                            // タイプ変更時は値をリセット
+                                            value: ''
+                                        };
+                                    }
+                                });
+                                
+                                // 更新されたノードを返す
+                                return {
+                                    ...node,
+                                    customFields: updatedCustomFields,
+                                    children: updatedChildren
+                                };
+                            });
+                        };
+                        
+                        // ツリー全体を更新
+                        setTree(updateNodeCustomFields(tree));
+                    }
+                }}
             />
 
             {/* ノード作成モーダル */}

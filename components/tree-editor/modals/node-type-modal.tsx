@@ -17,11 +17,26 @@ import { NodeType, CustomFieldDefinition } from '@/components/tree-editor/types'
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
+interface FieldChanges {
+    hasChanges: boolean;
+    added: CustomFieldDefinition[];
+    removed: string[]; // 削除されたフィールドのID
+    renamed: { id: string; oldName: string; newName: string }[];
+    typeChanged: { id: string; oldType: string; newType: string }[];
+    requirementChanged: { id: string; required: boolean }[];
+}
+
+// フィールド変更情報を含む型定義
+interface FieldChangeInfo {
+    nodeTypeId: string;
+    fieldChanges: FieldChanges;
+}
+
 interface NodeTypeModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     nodeTypes: NodeType[];
-    onSaveNodeTypes: (nodeTypes: NodeType[]) => void;
+    onSaveNodeTypes: (nodeTypes: NodeType[], fieldChangeInfo?: FieldChangeInfo) => void;
 }
 
 export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }: NodeTypeModalProps) {
@@ -102,7 +117,7 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
         if (editMode === 'new') {
             onSaveNodeTypes([...nodeTypes, editingNodeType]);
         } else {
-            // 既存のノードタイプを更新する場合、フィールド定義のIDを保持する
+            // 既存のノードタイプを更新する場合
             const originalType = nodeTypes.find((type) => type.id === editingNodeType.id);
 
             if (originalType) {
@@ -130,7 +145,25 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
                     fieldDefinitions: updatedFieldDefinitions,
                 };
 
-                onSaveNodeTypes(nodeTypes.map((type) => (type.id === updatedType.id ? updatedType : type)));
+                // 更新された全てのノードタイプを保存
+                const updatedNodeTypes = nodeTypes.map((type) => (type.id === updatedType.id ? updatedType : type));
+
+                // 更新前と更新後のフィールド定義を比較
+                const fieldChanges = compareFieldDefinitions(
+                    originalType.fieldDefinitions,
+                    updatedType.fieldDefinitions,
+                );
+
+                if (fieldChanges.hasChanges) {
+                    // フィールド変更があった場合、親コンポーネントにフィールド更新情報を含めて送信
+                    onSaveNodeTypes(updatedNodeTypes, {
+                        nodeTypeId: updatedType.id,
+                        fieldChanges: fieldChanges,
+                    });
+                } else {
+                    // 変更がない場合はシンプルに更新
+                    onSaveNodeTypes(updatedNodeTypes);
+                }
             } else {
                 // 元のタイプが見つからない場合はそのまま更新
                 onSaveNodeTypes(nodeTypes.map((type) => (type.id === editingNodeType.id ? editingNodeType : type)));
@@ -544,3 +577,67 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
         </Dialog>
     );
 }
+
+// フィールド定義の変更を比較する関数
+const compareFieldDefinitions = (originalFields: CustomFieldDefinition[], updatedFields: CustomFieldDefinition[]) => {
+    const result = {
+        hasChanges: false,
+        added: [] as CustomFieldDefinition[],
+        removed: [] as string[], // 削除されたフィールドのID
+        renamed: [] as { id: string; oldName: string; newName: string }[],
+        typeChanged: [] as { id: string; oldType: string; newType: string }[],
+        requirementChanged: [] as { id: string; required: boolean }[],
+    };
+
+    // 削除されたフィールドを検出
+    originalFields.forEach((origField) => {
+        const stillExists = updatedFields.some((newField) => newField.id === origField.id);
+        if (!stillExists) {
+            result.hasChanges = true;
+            result.removed.push(origField.id);
+        }
+    });
+
+    // 追加または変更されたフィールドを検出
+    updatedFields.forEach((newField) => {
+        const origField = originalFields.find((f) => f.id === newField.id);
+
+        if (!origField) {
+            // 新しく追加されたフィールド
+            result.hasChanges = true;
+            result.added.push(newField);
+            return;
+        }
+
+        // 名前の変更をチェック
+        if (origField.name !== newField.name) {
+            result.hasChanges = true;
+            result.renamed.push({
+                id: newField.id,
+                oldName: origField.name,
+                newName: newField.name,
+            });
+        }
+
+        // タイプの変更をチェック
+        if (origField.type !== newField.type) {
+            result.hasChanges = true;
+            result.typeChanged.push({
+                id: newField.id,
+                oldType: origField.type,
+                newType: newField.type,
+            });
+        }
+
+        // 必須フラグの変更をチェック
+        if (origField.required !== newField.required) {
+            result.hasChanges = true;
+            result.requirementChanged.push({
+                id: newField.id,
+                required: newField.required,
+            });
+        }
+    });
+
+    return result;
+};
