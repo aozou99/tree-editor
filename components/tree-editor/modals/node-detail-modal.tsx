@@ -510,10 +510,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                                         <Select
                                                             value={field.type}
                                                             onValueChange={(value) =>
-                                                                updateCustomFieldType(
-                                                                    field.id,
-                                                                    value as FieldType,
-                                                                )
+                                                                updateCustomFieldType(field.id, value as FieldType)
                                                             }
                                                             disabled={!!currentNodeType}
                                                         >
