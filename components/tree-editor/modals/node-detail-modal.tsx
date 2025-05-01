@@ -16,7 +16,7 @@ import { UrlInputDialog } from './url-input-dialog';
 import { YouTubeEmbed } from '../media/youtube-embed';
 import { ImageUpload } from '../media/image-upload';
 import { AudioUpload } from '../media/audio-upload';
-import { TreeNode, NodeType, CustomField } from '@/components/tree-editor/types';
+import { TreeNode, NodeType, CustomField, FieldType } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 import { validateNodeForm } from '@/components/tree-editor/utils/validation-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
@@ -184,7 +184,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     };
 
     // カスタムフィールドのタイプを更新
-    const updateCustomFieldType = (id: string, type: 'text' | 'textarea' | 'link' | 'youtube' | 'image' | 'audio') => {
+    const updateCustomFieldType = (id: string, type: FieldType) => {
         setEditedNode((prev) => ({
             ...prev,
             customFields: prev.customFields?.map((field) => {
@@ -512,13 +512,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                                             onValueChange={(value) =>
                                                                 updateCustomFieldType(
                                                                     field.id,
-                                                                    value as
-                                                                        | 'text'
-                                                                        | 'textarea'
-                                                                        | 'link'
-                                                                        | 'youtube'
-                                                                        | 'image'
-                                                                        | 'audio',
+                                                                    value as FieldType,
                                                                 )
                                                             }
                                                             disabled={!!currentNodeType}
