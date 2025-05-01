@@ -18,6 +18,7 @@ import { ImageUpload } from '../media/image-upload';
 import { AudioUpload } from '../media/audio-upload';
 import { TreeNode, NodeType, CustomField } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
+import { validateNodeForm } from '@/components/tree-editor/utils/validation-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface NodeDetailModalProps {
@@ -64,20 +65,11 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     // 編集モードをトグル
     const toggleEditMode = () => {
         if (isEditing) {
-            // URLフィールドのバリデーション
-            const errors: { [key: string]: string } = {};
-            let hasErrors = false;
+            // バリデーションを実行
+            const errors = validateNodeForm(editedNode.name, getCurrentNodeType(), editedNode.customFields || [], t);
 
-            editedNode.customFields?.forEach((field) => {
-                if (field.type === 'link' && field.value) {
-                    if (!isValidUrl(field.value)) {
-                        errors[field.id] = t('dialogs.node.detail.validation.validUrl');
-                        hasErrors = true;
-                    }
-                }
-            });
-
-            if (hasErrors) {
+            // エラーがあれば表示して保存しない
+            if (Object.keys(errors).length > 0) {
                 setUrlValidationErrors(errors);
                 return;
             }
@@ -251,7 +243,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
             return (
                 <img
                     src={icon || '/placeholder.svg'}
-                    alt='アイコン'
+                    alt={t('dialogs.node.detail.iconAlt')}
                     className='w-8 h-8 object-contain rounded-sm'
                     onError={(e) => {
                         e.currentTarget.src = '/exclamation-mark-in-nature.png';
@@ -295,20 +287,20 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                     const playPromise = audioElement.play();
                     if (playPromise !== undefined) {
                         playPromise.catch((error) => {
-                            console.error('音声の再生に失敗しました:', error);
+                            console.error(t('media.audio.errors.playbackError'), error);
                             setAudioErrors((prev) => ({
                                 ...prev,
-                                [fieldId]: '音声の再生に失敗しました。サポートされていない形式かもしれません。',
+                                [fieldId]: t('media.audio.errors.playbackError'),
                             }));
                             newState[fieldId] = false;
                         });
                     }
                 }
             } catch (error) {
-                console.error('音声の再生に失敗しました:', error);
+                console.error(t('media.audio.errors.playbackError'), error);
                 setAudioErrors((prev) => ({
                     ...prev,
-                    [fieldId]: '音声の再生に失敗しました。サポートされていない形式かもしれません。',
+                    [fieldId]: t('media.audio.errors.playbackError'),
                 }));
                 newState[fieldId] = false;
             }
@@ -732,7 +724,7 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                                                                     {field.value.startsWith(
                                                                                         'data:audio/',
                                                                                     )
-                                                                                        ? 'アップロードされた音声ファイル'
+                                                                                        ? t('media.audio.uploadedFile')
                                                                                         : field.value}
                                                                                 </div>
                                                                             </div>

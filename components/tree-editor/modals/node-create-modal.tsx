@@ -15,6 +15,7 @@ import { ImageUpload } from '../media/image-upload';
 import { AudioUpload } from '../media/audio-upload';
 import { Link } from 'lucide-react';
 import { NodeType, TreeNode, CustomField } from '@/components/tree-editor/types';
+import { validateNodeForm } from '@/components/tree-editor/utils/validation-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface NodeCreateModalProps {
@@ -111,22 +112,6 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
         return url?.startsWith && url?.startsWith('http');
     };
 
-    // URLが有効かチェック
-    const isValidUrl = (url: string): boolean => {
-        try {
-            new URL(url);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    };
-
-    // YouTubeのURLかどうかをチェック
-    const isValidYouTubeUrl = (url: string): boolean => {
-        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
-        return youtubeRegex.test(url);
-    };
-
     // アイコンのプレビューを表示
     const renderIconPreview = (icon?: string) => {
         if (!icon) return null;
@@ -150,38 +135,7 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
     // ノードの作成処理
     const handleCreate = () => {
         // バリデーション
-        const errors: { [key: string]: string } = {};
-
-        if (!nodeName.trim()) {
-            errors['nodeName'] = t('dialogs.node.create.validation.nodeNameRequired');
-        }
-
-        if (selectedType) {
-            selectedType.fieldDefinitions.forEach((def) => {
-                if (def.required) {
-                    const field = customFields.find((f) => f.definitionId === def.id);
-                    if (!field || !field.value.trim()) {
-                        errors[field?.id || def.id] = `${def.name}${t('dialogs.node.create.validation.fieldRequired')}`;
-                    }
-                }
-            });
-
-            // リンクフィールドのURLバリデーション
-            customFields.forEach((field) => {
-                if (field.type === 'link' && field.value) {
-                    if (!isValidUrl(field.value)) {
-                        errors[field.id] = t('dialogs.node.create.validation.validUrl');
-                    }
-                }
-
-                // YouTubeフィールドのURLバリデーション
-                if (field.type === 'youtube' && field.value) {
-                    if (!isValidYouTubeUrl(field.value)) {
-                        errors[field.id] = t('dialogs.node.create.validation.validYouTube');
-                    }
-                }
-            });
-        }
+        const errors = validateNodeForm(nodeName, selectedType, customFields, t);
 
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);

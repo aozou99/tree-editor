@@ -192,6 +192,7 @@ export const ja = {
                 nameLabel: 'ノード名',
                 nameRequired: '必須',
                 iconLabel: 'アイコン（任意）',
+                iconAlt: 'アイコン',
                 iconNotSet: 'アイコンが設定されていません（ノードタイプのアイコンが使用されます）',
                 customIconText: 'カスタムアイコン',
                 usingTypeIcon: 'ノードタイプのアイコンを使用',

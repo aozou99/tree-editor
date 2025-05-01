@@ -192,6 +192,7 @@ export const en = {
                 nameLabel: 'Node Name',
                 nameRequired: 'Required',
                 iconLabel: 'Icon (optional)',
+                iconAlt: 'Icon',
                 iconNotSet: 'No icon set (node type icon will be used)',
                 customIconText: 'Custom icon',
                 usingTypeIcon: 'Using node type icon',
