@@ -200,6 +200,7 @@ export const ja = {
                 customFields: 'カスタムフィールド',
                 addField: 'フィールド追加',
                 noCustomFields: 'カスタムフィールドはありません',
+                valuePlaceholder: '値を入力...',
                 validation: {
                     validUrl: '有効なURLを入力してください',
                 },

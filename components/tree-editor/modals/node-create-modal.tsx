@@ -6,17 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { EmojiPicker } from '../media/emoji-picker';
 import { UrlInputDialog } from './url-input-dialog';
-import { YouTubeEmbed } from '../media/youtube-embed';
-import { ImageUpload } from '../media/image-upload';
-import { AudioUpload } from '../media/audio-upload';
-import { Link } from 'lucide-react';
 import { NodeType, TreeNode, CustomField } from '@/components/tree-editor/types';
 import { validateNodeForm } from '@/components/tree-editor/utils/validation-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
+import { IconEditor } from '../media/icon-editor';
+import { FieldEditor } from '../fields/field-editor';
 
 interface NodeCreateModalProps {
     open: boolean;
@@ -217,39 +213,11 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                     <Label htmlFor='icon' className='text-sm font-semibold mb-1 block'>
                                         {t('dialogs.node.create.icon.label')}
                                     </Label>
-                                    <div className='flex gap-2 items-center'>
-                                        <div className='flex-1 border rounded-md p-2 flex items-center'>
-                                            <div className='w-8 h-8 flex items-center justify-center'>
-                                                {renderIconPreview(nodeIcon)}
-                                            </div>
-                                            {!nodeIcon && (
-                                                <div className='text-sm text-muted-foreground ml-2'>
-                                                    {t('dialogs.node.create.icon.notSet')}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <Button
-                                            variant='outline'
-                                            size='icon'
-                                            className='h-10 w-10'
-                                            onClick={() => setIsUrlDialogOpen(true)}
-                                            title={t('dialogs.nodeType.imageUrlTitle')}
-                                        >
-                                            <Link size={18} />
-                                        </Button>
-                                        <EmojiPicker onEmojiSelect={handleUpdateIcon} currentEmoji={nodeIcon} />
-                                        {nodeIcon && (
-                                            <Button
-                                                variant='outline'
-                                                size='sm'
-                                                onClick={handleClearIcon}
-                                                className='text-xs'
-                                                title={t('common.clear')}
-                                            >
-                                                {t('common.clear')}
-                                            </Button>
-                                        )}
-                                    </div>
+                                    <IconEditor
+                                        currentIcon={nodeIcon}
+                                        onChange={(icon) => setNodeIcon(icon)}
+                                        onClear={handleClearIcon}
+                                    />
                                 </div>
 
                                 {/* カスタムフィールド */}
@@ -274,91 +242,15 @@ export function NodeCreateModal({ open, onOpenChange, nodeTypes, onCreateNode, p
                                                             <span className='text-red-500 ml-1'>*</span>
                                                         )}
                                                     </Label>
-                                                    {field.type === 'textarea' ? (
-                                                        <Textarea
-                                                            id={`field-${field.id}`}
-                                                            value={field.value}
-                                                            onChange={(e) =>
-                                                                handleFieldChange(field.id, e.target.value)
+                                                    <FieldEditor
+                                                        field={field}
+                                                        updateField={(id, key, value) => {
+                                                            if (key === 'value') {
+                                                                handleFieldChange(id, value);
                                                             }
-                                                            className={formErrors[field.id] ? 'border-red-500' : ''}
-                                                        />
-                                                    ) : field.type === 'link' ? (
-                                                        <div className='flex flex-col w-full'>
-                                                            <Input
-                                                                id={`field-${field.id}`}
-                                                                value={field.value}
-                                                                onChange={(e) =>
-                                                                    handleFieldChange(field.id, e.target.value)
-                                                                }
-                                                                placeholder='https://example.com'
-                                                                className={formErrors[field.id] ? 'border-red-500' : ''}
-                                                            />
-                                                            {formErrors[field.id] && (
-                                                                <p className='text-red-500 text-xs mt-1'>
-                                                                    {formErrors[field.id]}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    ) : field.type === 'youtube' ? (
-                                                        <div className='flex flex-col w-full'>
-                                                            <Input
-                                                                id={`field-${field.id}`}
-                                                                value={field.value}
-                                                                onChange={(e) =>
-                                                                    handleFieldChange(field.id, e.target.value)
-                                                                }
-                                                                placeholder='https://www.youtube.com/watch?v=...'
-                                                                className={formErrors[field.id] ? 'border-red-500' : ''}
-                                                            />
-                                                            {field.value && (
-                                                                <div className='mt-2'>
-                                                                    <YouTubeEmbed url={field.value} />
-                                                                </div>
-                                                            )}
-                                                            {formErrors[field.id] && (
-                                                                <p className='text-red-500 text-xs mt-1'>
-                                                                    {formErrors[field.id]}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    ) : field.type === 'image' ? (
-                                                        <div className='flex flex-col w-full'>
-                                                            <ImageUpload
-                                                                value={field.value}
-                                                                onChange={(value) => handleFieldChange(field.id, value)}
-                                                            />
-                                                            {formErrors[field.id] && (
-                                                                <p className='text-red-500 text-xs mt-1'>
-                                                                    {formErrors[field.id]}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    ) : field.type === 'audio' ? (
-                                                        <div className='flex flex-col w-full'>
-                                                            <AudioUpload
-                                                                value={field.value}
-                                                                onChange={(value) => handleFieldChange(field.id, value)}
-                                                            />
-                                                            {formErrors[field.id] && (
-                                                                <p className='text-red-500 text-xs mt-1'>
-                                                                    {formErrors[field.id]}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <Input
-                                                            id={`field-${field.id}`}
-                                                            value={field.value}
-                                                            onChange={(e) =>
-                                                                handleFieldChange(field.id, e.target.value)
-                                                            }
-                                                            className={formErrors[field.id] ? 'border-red-500' : ''}
-                                                        />
-                                                    )}
-                                                    {formErrors[field.id] && (
-                                                        <p className='text-red-500 text-xs'>{formErrors[field.id]}</p>
-                                                    )}
+                                                        }}
+                                                        validationError={formErrors[field.id]}
+                                                    />
                                                 </div>
                                             );
                                         })}

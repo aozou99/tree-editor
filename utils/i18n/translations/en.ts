@@ -200,6 +200,7 @@ export const en = {
                 customFields: 'Custom Fields',
                 addField: 'Add Field',
                 noCustomFields: 'No custom fields',
+                valuePlaceholder: 'Enter value...',
                 validation: {
                     validUrl: 'Please enter a valid URL',
                 },

@@ -13,9 +13,10 @@ interface AudioUploadProps {
     value: string;
     onChange: (value: string) => void;
     className?: string;
+    disabled?: boolean;
 }
 
-export function AudioUpload({ value, onChange, className }: AudioUploadProps) {
+export function AudioUpload({ value, onChange, className, disabled = false }: AudioUploadProps) {
     const [isUrlMode, setIsUrlMode] = useState(value && !value.startsWith('data:audio/'));
     const [audioUrl, setAudioUrl] = useState(isUrlMode ? value : '');
     const [isPlaying, setIsPlaying] = useState(false);

@@ -10,12 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PlusCircle, Edit, Save, Trash, Link, Upload } from 'lucide-react';
-import { EmojiPicker } from '../media/emoji-picker';
+import { PlusCircle, Edit, Save, Trash } from 'lucide-react';
 import { UrlInputDialog } from './url-input-dialog';
 import { NodeType, CustomFieldDefinition } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
+import { IconEditor } from '../media/icon-editor';
 
 interface FieldChanges {
     hasChanges: boolean;
@@ -181,14 +181,6 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
     };
 
     // アイコンの更新（絵文字）
-    const handleUpdateIcon = (emoji: string) => {
-        if (editingNodeType) {
-            setEditingNodeType({
-                ...editingNodeType,
-                icon: emoji,
-            });
-        }
-    };
 
     // アイコンの更新（URL）
     const handleUpdateIconUrl = (url: string) => {
@@ -197,13 +189,6 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
                 ...editingNodeType,
                 icon: url,
             });
-        }
-    };
-
-    // ファイル選択ダイアログを開く
-    const handleOpenFileSelector = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
         }
     };
 
@@ -377,47 +362,34 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
 
                             <div className='mb-6'>
                                 <Label className='text-sm font-semibold mb-1 block'>{t('dialogs.nodeType.icon')}</Label>
-                                <div className='flex gap-2 items-center'>
-                                    <div className='flex-1 border rounded-md p-2 flex items-center'>
-                                        <div className='w-8 h-8 flex items-center justify-center'>
-                                            {renderIconPreview(editingNodeType?.icon)}
-                                        </div>
-                                        {!editingNodeType?.icon && (
-                                            <div className='text-sm text-muted-foreground ml-2'>
-                                                {t('dialogs.nodeType.noIcon')}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <Button
-                                        variant='outline'
-                                        size='icon'
-                                        className='h-10 w-10'
-                                        onClick={() => setIsUrlDialogOpen(true)}
-                                        title={t('dialogs.nodeType.imageUrlTitle')}
-                                    >
-                                        <Link size={18} />
-                                    </Button>
-                                    <Button
-                                        variant='outline'
-                                        size='icon'
-                                        className='h-10 w-10'
-                                        onClick={handleOpenFileSelector}
-                                        title={t('dialogs.nodeType.uploadImageTitle')}
-                                    >
-                                        <Upload size={18} />
-                                    </Button>
-                                    <EmojiPicker
-                                        onEmojiSelect={handleUpdateIcon}
-                                        currentEmoji={editingNodeType?.icon}
-                                    />
-                                    <input
-                                        type='file'
-                                        ref={fileInputRef}
-                                        className='hidden'
-                                        accept='image/*'
-                                        onChange={handleFileChange}
-                                    />
-                                </div>
+                                <IconEditor
+                                    currentIcon={editingNodeType?.icon}
+                                    onChange={(icon) => {
+                                        if (editingNodeType) {
+                                            setEditingNodeType({
+                                                ...editingNodeType,
+                                                icon: icon,
+                                            });
+                                        }
+                                    }}
+                                    onClear={() => {
+                                        if (editingNodeType) {
+                                            setEditingNodeType({
+                                                ...editingNodeType,
+                                                icon: '📄', // デフォルトアイコンを使用
+                                            });
+                                        }
+                                    }}
+                                    allowUpload={true}
+                                />
+                                {/* 非表示のファイルインプット */}
+                                <input
+                                    type='file'
+                                    ref={fileInputRef}
+                                    className='hidden'
+                                    accept='image/*'
+                                    onChange={handleFileChange}
+                                />
                             </div>
 
                             <div className='mb-4'>

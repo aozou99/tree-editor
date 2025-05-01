@@ -7,19 +7,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, Edit, Save, Trash, Link, ExternalLink, Play, Pause, AlertCircle } from 'lucide-react';
-import { EmojiPicker } from '../media/emoji-picker';
+import { PlusCircle, Edit, Save, Play, Pause, AlertCircle } from 'lucide-react';
 import { UrlInputDialog } from './url-input-dialog';
-import { YouTubeEmbed } from '../media/youtube-embed';
-import { ImageUpload } from '../media/image-upload';
-import { AudioUpload } from '../media/audio-upload';
 import { TreeNode, NodeType, CustomField, FieldType } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 import { validateNodeForm } from '@/components/tree-editor/utils/validation-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
+import { IconEditor } from '../media/icon-editor';
+import { FieldEditor } from '../fields/field-editor';
+import { FieldDisplay } from '../fields/field-display';
 
 interface NodeDetailModalProps {
     node: TreeNode;
@@ -27,6 +25,146 @@ interface NodeDetailModalProps {
     onOpenChange: (open: boolean) => void;
     onUpdateNode: (node: TreeNode) => void;
     nodeTypes: NodeType[];
+}
+
+// FieldEditor用のインターフェース作成
+interface FieldEditorWrapperProps {
+    customFields: CustomField[];
+    currentNodeType: NodeType | null;
+    updateCustomField: (id: string, key: keyof CustomField, value: string) => void;
+    updateCustomFieldType: (id: string, type: FieldType) => void;
+    removeCustomField: (id: string) => void;
+    urlValidationErrors: { [key: string]: string };
+}
+
+// カスタムフィールド編集用コンポーネント
+function FieldEditorWrapper({
+    customFields,
+    currentNodeType,
+    updateCustomField,
+    updateCustomFieldType,
+    removeCustomField,
+    urlValidationErrors,
+}: FieldEditorWrapperProps) {
+    return (
+        <div className='space-y-3'>
+            {customFields.map((field) => (
+                <FieldEditor
+                    key={field.id}
+                    field={field}
+                    updateField={updateCustomField}
+                    updateFieldType={!currentNodeType ? updateCustomFieldType : undefined}
+                    removeField={!currentNodeType ? removeCustomField : undefined}
+                    disabled={false}
+                    validationError={urlValidationErrors[field.id]}
+                />
+            ))}
+        </div>
+    );
+}
+
+// FieldDisplay用のインターフェース作成
+interface FieldDisplayWrapperProps {
+    customFields: CustomField[];
+    audioPlayers: { [key: string]: boolean };
+    audioRefs: React.MutableRefObject<{ [key: string]: HTMLAudioElement | null }>;
+    audioErrors: { [key: string]: string };
+    toggleAudioPlayback: (fieldId: string) => void;
+    handleAudioEnded: (fieldId: string) => void;
+    handleAudioError: (fieldId: string) => void;
+}
+
+// カスタムフィールド表示用コンポーネント
+function FieldDisplayWrapper({
+    customFields,
+    audioPlayers,
+    audioRefs,
+    audioErrors,
+    toggleAudioPlayback,
+    handleAudioEnded,
+    handleAudioError,
+}: FieldDisplayWrapperProps) {
+    const { t } = useI18n();
+
+    return (
+        <>
+            {customFields?.map((field) => (
+                <div key={field.id} className='mb-4'>
+                    <div className='flex items-center mb-1'>
+                        <div className='text-sm font-medium text-foreground'>{field.name}</div>
+                        {field.type === 'text' && (
+                            <span className='ml-2 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 rounded text-[10px]'>
+                                Text
+                            </span>
+                        )}
+                        {field.type === 'link' && (
+                            <span className='ml-2 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded text-[10px]'>
+                                URL
+                            </span>
+                        )}
+                        {field.type === 'textarea' && (
+                            <span className='ml-2 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 rounded text-[10px]'>
+                                Text Area
+                            </span>
+                        )}
+                        {field.type === 'youtube' && (
+                            <span className='ml-2 px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 rounded text-[10px]'>
+                                YouTube
+                            </span>
+                        )}
+                        {field.type === 'image' && (
+                            <span className='ml-2 px-1.5 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded text-[10px]'>
+                                Image
+                            </span>
+                        )}
+                        {field.type === 'audio' && (
+                            <span className='ml-2 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 rounded text-[10px]'>
+                                Audio
+                            </span>
+                        )}
+                    </div>
+
+                    {field.type === 'audio' ? (
+                        <div className='bg-muted/30 p-2 rounded-md'>
+                            <div className='flex items-center gap-2'>
+                                <Button
+                                    variant='outline'
+                                    size='icon'
+                                    className='h-10 w-10 rounded-full'
+                                    onClick={() => toggleAudioPlayback(field.id)}
+                                >
+                                    {audioPlayers[field.id] ? <Pause size={18} /> : <Play size={18} />}
+                                </Button>
+                                <audio
+                                    ref={(el) => {
+                                        audioRefs.current[field.id] = el;
+                                        return undefined;
+                                    }}
+                                    src={field.value}
+                                    onEnded={() => handleAudioEnded(field.id)}
+                                    onError={() => handleAudioError(field.id)}
+                                    className='hidden'
+                                />
+                                <div className='text-sm'>
+                                    {field.value?.startsWith('data:audio/')
+                                        ? t('media.audio.uploadedFile')
+                                        : field.value}
+                                </div>
+                            </div>
+                            {audioErrors[field.id] && (
+                                <div className='mt-2 text-red-500 text-sm flex items-center'>
+                                    <AlertCircle size={16} className='mr-1' />
+                                    {audioErrors[field.id]}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <FieldDisplay field={field} />
+                    )}
+                </div>
+            ))}
+        </>
+    );
 }
 
 export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTypes }: NodeDetailModalProps) {
@@ -85,14 +223,6 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     };
 
     // URLが有効かチェック
-    const isValidUrl = (url: string): boolean => {
-        try {
-            new URL(url);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    };
 
     // ノードタイプを変更した時に呼ばれる
     const handleNodeTypeChange = (typeId: string) => {
@@ -233,26 +363,6 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
     // 画像URLか絵文字かを判断
     const isImageUrl = (url?: string) => {
         return url?.startsWith && url?.startsWith('http');
-    };
-
-    // アイコンのプレビューを表示
-    const renderIconPreview = (icon?: string) => {
-        if (!icon) return null;
-
-        if (isImageUrl(icon)) {
-            return (
-                <img
-                    src={icon || '/placeholder.svg'}
-                    alt={t('dialogs.node.detail.iconAlt')}
-                    className='w-8 h-8 object-contain rounded-sm'
-                    onError={(e) => {
-                        e.currentTarget.src = '/exclamation-mark-in-nature.png';
-                    }}
-                />
-            );
-        }
-
-        return <span className='text-2xl'>{icon}</span>;
     };
 
     // 音声の再生/一時停止を切り替え
@@ -405,39 +515,11 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                 {t('dialogs.node.detail.iconLabel')}
                             </Label>
                             {isEditing ? (
-                                <div className='flex gap-2 items-center'>
-                                    <div className='flex-1 border rounded-md p-2 flex items-center'>
-                                        <div className='w-8 h-8 flex items-center justify-center'>
-                                            {renderIconPreview(displayIcon || '')}
-                                        </div>
-                                        {!displayIcon && (
-                                            <div className='text-sm text-muted-foreground ml-2'>
-                                                {t('dialogs.node.detail.iconNotSet')}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <Button
-                                        variant='outline'
-                                        size='icon'
-                                        className='h-10 w-10'
-                                        onClick={() => setIsUrlDialogOpen(true)}
-                                        title={t('dialogs.nodeType.imageUrlTitle')}
-                                    >
-                                        <Link size={18} />
-                                    </Button>
-                                    <EmojiPicker onEmojiSelect={handleUpdateIcon} currentEmoji={editedNode.icon} />
-                                    {editedNode.icon && (
-                                        <Button
-                                            variant='outline'
-                                            size='sm'
-                                            onClick={handleClearIcon}
-                                            className='text-xs'
-                                            title={t('common.clear')}
-                                        >
-                                            {t('common.clear')}
-                                        </Button>
-                                    )}
-                                </div>
+                                <IconEditor
+                                    currentIcon={editedNode.icon}
+                                    onChange={handleUpdateIcon}
+                                    onClear={handleClearIcon}
+                                />
                             ) : (
                                 <div className='p-2 bg-muted/50 rounded-md flex items-center'>
                                     {displayIcon ? (
@@ -493,249 +575,26 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                                 {editedNode.customFields && editedNode.customFields.length > 0 ? (
                                     <>
                                         {isEditing ? (
-                                            <>
-                                                {editedNode.customFields.map((field) => (
-                                                    <div
-                                                        key={field.id}
-                                                        className='grid grid-cols-[1fr_auto_2fr] gap-2 items-start'
-                                                    >
-                                                        <Input
-                                                            value={field.name}
-                                                            onChange={(e) =>
-                                                                updateCustomField(field.id, 'name', e.target.value)
-                                                            }
-                                                            placeholder={t('dialogs.nodeType.fieldNamePlaceholder')}
-                                                            disabled={!!currentNodeType}
-                                                        />
-                                                        <Select
-                                                            value={field.type}
-                                                            onValueChange={(value) =>
-                                                                updateCustomFieldType(field.id, value as FieldType)
-                                                            }
-                                                            disabled={!!currentNodeType}
-                                                        >
-                                                            <SelectTrigger className='w-[120px]'>
-                                                                <SelectValue
-                                                                    placeholder={t('dialogs.nodeType.fieldTypeSelect')}
-                                                                />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value='text'>
-                                                                    {t('dialogs.nodeType.fieldTypes.text')}
-                                                                </SelectItem>
-                                                                <SelectItem value='textarea'>
-                                                                    {t('dialogs.nodeType.fieldTypes.textarea')}
-                                                                </SelectItem>
-                                                                <SelectItem value='link'>
-                                                                    {t('dialogs.nodeType.fieldTypes.link')}
-                                                                </SelectItem>
-                                                                <SelectItem value='youtube'>
-                                                                    {t('dialogs.nodeType.fieldTypes.youtube')}
-                                                                </SelectItem>
-                                                                <SelectItem value='image'>
-                                                                    {t('dialogs.nodeType.fieldTypes.image')}
-                                                                </SelectItem>
-                                                                <SelectItem value='audio'>
-                                                                    {t('dialogs.nodeType.fieldTypes.audio')}
-                                                                </SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {field.type === 'textarea' ? (
-                                                            <Textarea
-                                                                value={field.value}
-                                                                onChange={(e) =>
-                                                                    updateCustomField(field.id, 'value', e.target.value)
-                                                                }
-                                                                placeholder='値'
-                                                                className='min-h-[80px]'
-                                                            />
-                                                        ) : field.type === 'link' ? (
-                                                            <div className='flex flex-col w-full'>
-                                                                <Input
-                                                                    value={field.value}
-                                                                    onChange={(e) =>
-                                                                        updateCustomField(
-                                                                            field.id,
-                                                                            'value',
-                                                                            e.target.value,
-                                                                        )
-                                                                    }
-                                                                    placeholder='https://example.com'
-                                                                    className={
-                                                                        urlValidationErrors[field.id]
-                                                                            ? 'border-red-500'
-                                                                            : ''
-                                                                    }
-                                                                />
-                                                                {urlValidationErrors[field.id] && (
-                                                                    <p className='text-red-500 text-xs mt-1'>
-                                                                        {urlValidationErrors[field.id]}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        ) : field.type === 'youtube' ? (
-                                                            <div className='flex flex-col w-full'>
-                                                                <Input
-                                                                    value={field.value}
-                                                                    onChange={(e) =>
-                                                                        updateCustomField(
-                                                                            field.id,
-                                                                            'value',
-                                                                            e.target.value,
-                                                                        )
-                                                                    }
-                                                                    placeholder='https://www.youtube.com/watch?v=...'
-                                                                    className={
-                                                                        urlValidationErrors[field.id]
-                                                                            ? 'border-red-500'
-                                                                            : ''
-                                                                    }
-                                                                />
-                                                                {field.value && (
-                                                                    <div className='mt-2'>
-                                                                        <YouTubeEmbed url={field.value} />
-                                                                    </div>
-                                                                )}
-                                                                {urlValidationErrors[field.id] && (
-                                                                    <p className='text-red-500 text-xs mt-1'>
-                                                                        {urlValidationErrors[field.id]}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        ) : field.type === 'image' ? (
-                                                            <div className='flex flex-col w-full'>
-                                                                <ImageUpload
-                                                                    value={field.value}
-                                                                    onChange={(value) =>
-                                                                        updateCustomField(field.id, 'value', value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ) : field.type === 'audio' ? (
-                                                            <div className='flex flex-col w-full'>
-                                                                <AudioUpload
-                                                                    value={field.value}
-                                                                    onChange={(value) =>
-                                                                        updateCustomField(field.id, 'value', value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <Input
-                                                                value={field.value}
-                                                                onChange={(e) =>
-                                                                    updateCustomField(field.id, 'value', e.target.value)
-                                                                }
-                                                                placeholder='値'
-                                                            />
-                                                        )}
-                                                        {!currentNodeType && (
-                                                            <Button
-                                                                variant='ghost'
-                                                                size='icon'
-                                                                onClick={() => removeCustomField(field.id)}
-                                                                className='h-9 w-9'
-                                                            >
-                                                                <Trash size={16} />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </>
+                                            <FieldEditorWrapper
+                                                customFields={editedNode.customFields}
+                                                currentNodeType={currentNodeType}
+                                                updateCustomField={updateCustomField}
+                                                updateCustomFieldType={updateCustomFieldType}
+                                                removeCustomField={removeCustomField}
+                                                urlValidationErrors={urlValidationErrors}
+                                            />
                                         ) : (
                                             <Card>
                                                 <CardContent className='p-4 grid gap-3'>
-                                                    {node.customFields?.map((field) => (
-                                                        <div key={field.id} className='grid grid-cols-[1fr_2fr] gap-2'>
-                                                            <div className='font-medium text-sm'>{field.name}</div>
-                                                            <div className='text-sm break-words whitespace-pre-wrap'>
-                                                                {field.type === 'textarea' ? (
-                                                                    field.value
-                                                                ) : field.type === 'link' ? (
-                                                                    <a
-                                                                        href={field.value}
-                                                                        target='_blank'
-                                                                        rel='noopener noreferrer'
-                                                                        className='text-blue-600 hover:underline flex items-center'
-                                                                    >
-                                                                        {field.value}
-                                                                        <ExternalLink size={14} />
-                                                                    </a>
-                                                                ) : field.type === 'youtube' ? (
-                                                                    <div className='mt-1'>
-                                                                        <YouTubeEmbed url={field.value} />
-                                                                    </div>
-                                                                ) : field.type === 'image' ? (
-                                                                    <div className='mt-1'>
-                                                                        {field.value && (
-                                                                            <img
-                                                                                src={field.value || '/placeholder.svg'}
-                                                                                alt={field.name}
-                                                                                className='max-h-[200px] w-auto object-contain rounded-md'
-                                                                                onError={(e) => {
-                                                                                    e.currentTarget.src =
-                                                                                        '/exclamation-mark-in-nature.png';
-                                                                                }}
-                                                                            />
-                                                                        )}
-                                                                    </div>
-                                                                ) : field.type === 'audio' ? (
-                                                                    <div className='mt-1'>
-                                                                        {field.value && (
-                                                                            <div className='flex items-center gap-2'>
-                                                                                <Button
-                                                                                    variant='outline'
-                                                                                    size='icon'
-                                                                                    className='h-10 w-10 rounded-full'
-                                                                                    onClick={() =>
-                                                                                        toggleAudioPlayback(field.id)
-                                                                                    }
-                                                                                >
-                                                                                    {audioPlayers[field.id] ? (
-                                                                                        <Pause size={18} />
-                                                                                    ) : (
-                                                                                        <Play size={18} />
-                                                                                    )}
-                                                                                </Button>
-                                                                                <audio
-                                                                                    ref={(el) => {
-                                                                                        audioRefs.current[field.id] =
-                                                                                            el;
-                                                                                    }}
-                                                                                    src={field.value}
-                                                                                    onEnded={() =>
-                                                                                        handleAudioEnded(field.id)
-                                                                                    }
-                                                                                    onError={() =>
-                                                                                        handleAudioError(field.id)
-                                                                                    }
-                                                                                    className='hidden'
-                                                                                />
-                                                                                <div className='text-sm'>
-                                                                                    {field.value.startsWith(
-                                                                                        'data:audio/',
-                                                                                    )
-                                                                                        ? t('media.audio.uploadedFile')
-                                                                                        : field.value}
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                        {audioErrors[field.id] && (
-                                                                            <div className='mt-2 text-red-500 text-sm flex items-center'>
-                                                                                <AlertCircle
-                                                                                    size={16}
-                                                                                    className='mr-1'
-                                                                                />
-                                                                                {audioErrors[field.id]}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                ) : (
-                                                                    field.value
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                    <FieldDisplayWrapper
+                                                        customFields={node.customFields || []}
+                                                        audioPlayers={audioPlayers}
+                                                        audioRefs={audioRefs}
+                                                        audioErrors={audioErrors}
+                                                        toggleAudioPlayback={toggleAudioPlayback}
+                                                        handleAudioEnded={handleAudioEnded}
+                                                        handleAudioError={handleAudioError}
+                                                    />
                                                 </CardContent>
                                             </Card>
                                         )}

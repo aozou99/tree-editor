@@ -14,9 +14,10 @@ interface ImageUploadProps {
     value: string;
     onChange: (value: string) => void;
     className?: string;
+    disabled?: boolean;
 }
 
-export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, className, disabled = false }: ImageUploadProps) {
     const [isUrlMode, setIsUrlMode] = useState(value && !isBase64Image(value));
     const [imageUrl, setImageUrl] = useState(isUrlMode ? value : '');
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,6 +126,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                             size='sm'
                             onClick={() => setIsUrlMode(false)}
                             className='flex-1'
+                            disabled={disabled}
                         >
                             <Upload size={16} className='mr-2' />
                             {t('media.image.fileTab')}
@@ -135,6 +137,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                             size='sm'
                             onClick={() => setIsUrlMode(true)}
                             className='flex-1'
+                            disabled={disabled}
                         >
                             <Link size={16} className='mr-2' />
                             {t('media.image.urlTab')}
@@ -149,8 +152,14 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                                 value={imageUrl}
                                 onChange={handleUrlChange}
                                 className='flex-1'
+                                disabled={disabled}
                             />
-                            <Button type='button' size='sm' onClick={handleUrlSubmit} disabled={!imageUrl.trim()}>
+                            <Button
+                                type='button'
+                                size='sm'
+                                onClick={handleUrlSubmit}
+                                disabled={!imageUrl.trim() || disabled}
+                            >
                                 {t('media.image.set')}
                             </Button>
                         </div>
@@ -171,6 +180,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                                 accept='image/*'
                                 onChange={handleFileChange}
                                 className='hidden'
+                                disabled={disabled}
                             />
                         </div>
                     )}
