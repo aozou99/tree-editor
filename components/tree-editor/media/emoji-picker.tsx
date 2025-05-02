@@ -5,62 +5,52 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Smile } from 'lucide-react';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
 // 絵文字カテゴリー
 const emojiCategories = [
     {
         id: 'faces',
-        name: '顔',
         emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘'],
     },
     {
         id: 'people',
-        name: '人物',
         emojis: ['👶', '👧', '🧒', '👦', '👩', '🧑', '👨', '👵', '🧓', '👴', '👲', '👳‍♀️', '👳‍♂️', '🧕', '👮‍♀️', '👮‍♂️'],
     },
     {
         id: 'animals',
-        name: '動物',
         emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧'],
     },
     {
         id: 'food',
-        name: '食べ物',
         emojis: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥑'],
     },
     {
         id: 'activities',
-        name: '活動',
         emojis: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅'],
     },
     {
         id: 'travel',
-        name: '旅行',
         emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🛴', '🚲', '🛵', '🏍'],
     },
     {
         id: 'objects',
-        name: '物',
         emojis: ['⌚', '📱', '📲', '💻', '⌨', '🖥', '🖨', '🖱', '🖲', '🕹', '🗜', '💽', '💾', '💿', '📀', '📼', '📷'],
     },
     {
         id: 'symbols',
-        name: '記号',
         emojis: ['❤', '🧡', '💛', '💚', '💙', '💜', '🖤', '💔', '❣', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟'],
     },
     {
         id: 'flags',
-        name: '旗',
         emojis: ['🏳', '🏴', '🏁', '🚩', '🏳️‍🌈', '🏳️‍⚧️', '🇦🇫', '🇦🇽', '🇦🇱', '🇩🇿', '🇦🇸', '🇦🇩', '🇦🇴', '🇦🇮', '🇦🇶'],
     },
     {
         id: 'folders',
-        name: 'フォルダ',
         emojis: ['📁', '📂', '🗂️', '📋', '📑', '🗄️', '📊', '📈', '📉', '📇', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️'],
     },
     {
         id: 'documents',
-        name: '書類',
         emojis: ['📝', '📄', '📃', '📜', '📰', '🗞️', '📑', '🔖', '🏷️', '💼', '📁', '📂', '🗂️', '📅', '📆', '🗓️', '📇'],
     },
 ];
@@ -71,13 +61,14 @@ interface EmojiPickerProps {
     disabled?: boolean;
 }
 
-export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: EmojiPickerProps) {
+export function EmojiPicker({ onEmojiSelect, disabled = false }: EmojiPickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredEmojis, setFilteredEmojis] = useState<string[]>([]);
     const [activeCategory, setActiveCategory] = useState('faces');
     const inputRef = useRef<HTMLInputElement>(null);
     const modalRef = useRef<HTMLDivElement>(null);
+    const { t } = useI18n();
 
     // 検索クエリが変更されたときに絵文字をフィルタリング
     useEffect(() => {
@@ -86,7 +77,6 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
             return;
         }
 
-        const query = searchQuery.toLowerCase();
         const results: string[] = [];
 
         emojiCategories.forEach((category) => {
@@ -124,11 +114,6 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
         };
     }, [isOpen]);
 
-    // アイコンが画像URLかどうかを判定
-    const isIconUrl = (icon?: string) => {
-        return icon?.startsWith('http');
-    };
-
     return (
         <div className='relative'>
             <Button
@@ -136,7 +121,7 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
                 size='icon'
                 className='h-10 w-10'
                 onClick={() => setIsOpen(!isOpen)}
-                title='絵文字を選択'
+                title={t('media.emoji.title')}
                 disabled={disabled}
             >
                 <Smile size={18} />
@@ -152,7 +137,7 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
                             <Search className='absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                             <Input
                                 ref={inputRef}
-                                placeholder='絵文字を検索...'
+                                placeholder={t('media.emoji.searchPlaceholder')}
                                 className='pl-8'
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -177,7 +162,7 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
                             </div>
                             {filteredEmojis.length === 0 && (
                                 <div className='text-center py-4 text-sm text-muted-foreground'>
-                                    絵文字が見つかりません
+                                    {t('media.emoji.notFound')}
                                 </div>
                             )}
                         </ScrollArea>
@@ -192,7 +177,7 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
                                             className='text-xs px-2 py-1 h-7'
                                             onClick={() => setActiveCategory(category.id)}
                                         >
-                                            {category.name}
+                                            {t(`media.emoji.categories.${category.id}`)}
                                         </Button>
                                     ))}
                                 </div>
@@ -217,9 +202,9 @@ export function EmojiPicker({ onEmojiSelect, currentEmoji, disabled = false }: E
                     )}
 
                     <div className='p-2 border-t flex justify-between items-center'>
-                        <div className='text-xs text-muted-foreground'>絵文字を選択してください</div>
+                        <div className='text-xs text-muted-foreground'>{t('media.emoji.selectPrompt')}</div>
                         <Button variant='ghost' size='sm' onClick={() => setIsOpen(false)}>
-                            キャンセル
+                            {t('common.cancel')}
                         </Button>
                     </div>
                 </div>
