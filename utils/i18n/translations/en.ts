@@ -259,6 +259,7 @@ export const en = {
             categories: {
                 faces: 'Faces',
                 people: 'People',
+                gestures: 'Gestures',
                 animals: 'Animals',
                 food: 'Food',
                 activities: 'Activities',

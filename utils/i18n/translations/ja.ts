@@ -259,6 +259,7 @@ export const ja = {
             categories: {
                 faces: '顔',
                 people: '人物',
+                gestures: 'ジェスチャー',
                 animals: '動物',
                 food: '食べ物',
                 activities: '活動',
