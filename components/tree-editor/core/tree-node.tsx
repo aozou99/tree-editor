@@ -60,8 +60,12 @@ export function TreeNodeComponent({
     onDragLeave,
     onDrop,
 }: TreeNodeComponentProps) {
+    // ノードの状態を判断するヘルパー変数
     const hasChildren = node.children.length > 0;
     const isHighlighted = highlightedPath.has(node.id);
+    // ハイライトパスの末端ノード（検索結果の対象）かどうかを判断
+    const isTargetNode =
+        isHighlighted && (highlightedPath.size === 1 || node.children.every((child) => !highlightedPath.has(child.id)));
     const nodeTypeInfo = getNodeTypeInfo(nodeTypes, node.nodeType);
 
     // ノードのアイコンを取得する関数
@@ -111,9 +115,10 @@ export function TreeNodeComponent({
 
             <div
                 className={cn(
-                    'flex items-center py-1 px-2 rounded-md group cursor-pointer',
+                    'flex items-center py-1 px-2 group cursor-pointer',
                     depth > 0 && 'ml-6',
-                    isHighlighted ? 'bg-blue-100' : 'hover:bg-muted/50',
+                    isHighlighted ? 'bg-blue-50' : 'hover:bg-muted/50',
+                    isTargetNode && 'bg-blue-100 border-l-4 border-blue-400 pl-1',
                 )}
                 onClick={() => onNodeClick(node)}
             >

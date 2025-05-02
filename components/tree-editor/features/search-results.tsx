@@ -47,7 +47,8 @@ export const SearchResults = forwardRef<HTMLDivElement, SearchResultsProps>(
             <div
                 ref={ref}
                 className={cn(
-                    'absolute z-10 mt-1 w-full bg-white border rounded-md shadow-md max-h-60 overflow-y-auto',
+                    'absolute z-10 mt-1 w-full bg-card border rounded-md shadow-lg max-h-60 overflow-y-auto',
+                    'divide-y divide-border',
                     className,
                 )}
             >
@@ -56,8 +57,8 @@ export const SearchResults = forwardRef<HTMLDivElement, SearchResultsProps>(
                         key={`${result.node.id}-${index}`}
                         ref={index === selectedIndex ? selectedItemRef : null}
                         className={cn(
-                            'px-3 py-2 cursor-pointer hover:bg-muted/50 flex flex-col',
-                            selectedIndex === index && 'bg-blue-100 hover:bg-blue-100',
+                            'px-3 py-2.5 cursor-pointer hover:bg-accent/50 flex flex-col transition-colors duration-150',
+                            selectedIndex === index && 'bg-accent/80 hover:bg-accent/80',
                         )}
                         onClick={() => {
                             onSelect(index);
@@ -67,7 +68,7 @@ export const SearchResults = forwardRef<HTMLDivElement, SearchResultsProps>(
                     >
                         <div className='flex items-center'>
                             {result.node.icon && (
-                                <span className='mr-2'>
+                                <span className='mr-2 flex items-center justify-center w-6 h-6 bg-background rounded-md border'>
                                     {isImageUrl(result.node.icon) || isBase64Image(result.node.icon) ? (
                                         <img
                                             src={result.node.icon || '/placeholder.svg'}
@@ -81,11 +82,18 @@ export const SearchResults = forwardRef<HTMLDivElement, SearchResultsProps>(
                             )}
                             <span className='font-medium'>{result.node.name}</span>
                         </div>
-                        <div className='text-xs text-muted-foreground mt-1'>
-                            <span className='font-medium'>{result.matchField}:</span> {result.matchValue}
-                        </div>
-                        <div className='text-xs text-muted-foreground mt-1'>
-                            パス: {result.path.map((node) => node.name).join(' > ')}
+                        <div className='flex flex-col gap-1 mt-1.5'>
+                            <div className='text-xs flex items-center'>
+                                <span className='font-medium text-muted-foreground/80 inline-flex items-center'>
+                                    <span className='inline-block w-1.5 h-1.5 bg-primary/60 rounded-full mr-1.5'></span>
+                                    {result.matchField}:
+                                </span>
+                                <span className='ml-1 text-muted-foreground line-clamp-1'>{result.matchValue}</span>
+                            </div>
+                            <div className='text-xs text-muted-foreground/80 flex items-center'>
+                                <span className='inline-block w-1.5 h-1.5 bg-secondary/70 rounded-full mr-1.5'></span>
+                                <span className='line-clamp-1'>{result.path.map((node) => node.name).join(' > ')}</span>
+                            </div>
                         </div>
                     </div>
                 ))}
