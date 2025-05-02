@@ -131,9 +131,12 @@ export const ja = {
             addField: 'フィールド追加',
             noFields: 'フィールドがありません。追加してください。',
             fieldName: 'フィールド名',
+            fieldNameLabel: 'フィールド名',
             fieldNamePlaceholder: '例: 役職、部署など',
             fieldType: 'タイプ',
+            fieldTypeLabel: 'タイプ',
             fieldTypeSelect: 'タイプを選択',
+            fieldValueLabel: '値',
             fieldTypes: {
                 text: '一行テキスト',
                 textarea: '複数行テキスト',

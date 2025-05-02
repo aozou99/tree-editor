@@ -57,6 +57,9 @@ function FieldEditorWrapper({
                     removeField={!currentNodeType ? removeCustomField : undefined}
                     disabled={false}
                     validationError={urlValidationErrors[field.id]}
+                    // フィールドがノードタイプから生成された場合（definitionIdがある）、
+                    // または現在のノードタイプが存在する場合は、フィールド名を編集不可にする
+                    readOnlyFieldName={!!field.definitionId || !!currentNodeType}
                 />
             ))}
         </div>
