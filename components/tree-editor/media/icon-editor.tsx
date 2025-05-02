@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'lucide-react';
-import { EmojiPicker } from './emoji-picker';
+import { EmojiPicker } from './emoji/emoji-picker';
 import { UrlInputDialog } from '../modals/url-input-dialog';
 import { isImageUrl, isBase64Image } from '../utils/image-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
