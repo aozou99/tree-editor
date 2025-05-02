@@ -129,6 +129,8 @@ function TreeEditor() {
         handleSelectSearchResult,
         handleOpenDetailModal,
         handleSearchKeyDown,
+        expandedTree,
+        setExpandedTree,
     } = useSearch({ tree, nodeTypes });
 
     // 自動保存のためのデバウンス関数
@@ -224,6 +226,11 @@ function TreeEditor() {
             saveCurrentWorkspace();
         }
     }, [tree, nodeTypes, treeTitle, activeWorkspaceId, isWorkspaceLoading, saveCurrentWorkspace]);
+
+    // tree が変更されたら expandedTree も更新
+    useEffect(() => {
+        setExpandedTree(tree);
+    }, [tree, setExpandedTree]);
 
     // サンプルを変更する関数
     const handleSelectSample = (sampleId: SampleType) => {
@@ -551,6 +558,7 @@ function TreeEditor() {
                 return node;
             });
         };
+
         setTree(updateNode(tree));
 
         // selectedNode も更新して UI に即時反映させる
@@ -612,7 +620,7 @@ function TreeEditor() {
                         <p className='text-primary/70 text-sm font-medium'>{t('tree.dropHere')}</p>
                     </div>
                 )}
-                {tree.map((node) => (
+                {expandedTree.map((node) => (
                     <TreeNodeComponent
                         key={node.id}
                         node={node}

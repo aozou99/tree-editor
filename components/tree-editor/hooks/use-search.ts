@@ -5,7 +5,7 @@ import type React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import type { TreeNode, NodeType } from '../types';
 import type { SearchResult } from '../types/search-types';
-import { parseSearchQuery, searchTree } from '../utils/search-utils';
+import { parseSearchQuery, searchTree, expandNodesInPath } from '../utils/search-utils';
 
 export interface UseSearchProps {
     tree: TreeNode[];
@@ -29,6 +29,8 @@ export interface UseSearchReturn {
     handleSearchKeyDown: (e: React.KeyboardEvent) => void;
     updateHighlightedPath: (path: TreeNode[]) => void;
     setFocusMode: (mode: boolean) => void;
+    expandedTree: TreeNode[];
+    setExpandedTree: React.Dispatch<React.SetStateAction<TreeNode[]>>;
 }
 
 export function useSearch({ tree, nodeTypes }: UseSearchProps): UseSearchReturn {
@@ -42,6 +44,8 @@ export function useSearch({ tree, nodeTypes }: UseSearchProps): UseSearchReturn 
     const searchResultsRef = useRef<HTMLDivElement>(null);
     const [searchResultsHeight, setSearchResultsHeight] = useState<number>(0);
     const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+    // 展開されたツリーを保持する状態を追加
+    const [expandedTree, setExpandedTree] = useState<TreeNode[]>(tree);
 
     // ハイライトされたパスを更新する関数
     const updateHighlightedPath = (path: TreeNode[]) => {
@@ -69,6 +73,8 @@ export function useSearch({ tree, nodeTypes }: UseSearchProps): UseSearchReturn 
             setSelectedResultIndex(0);
             updateHighlightedPath(results[0].path);
             setFocusMode(true);
+            // 最初の検索結果の親ノードも展開する
+            setExpandedTree(expandNodesInPath(tree, results[0].path));
         } else {
             setSelectedResultIndex(0);
             setHighlightedPath(new Set());
@@ -76,12 +82,19 @@ export function useSearch({ tree, nodeTypes }: UseSearchProps): UseSearchReturn 
         }
     }, [searchQuery, tree, nodeTypes]);
 
+    // ツリーが変更されたときに展開状態を更新
+    useEffect(() => {
+        setExpandedTree(tree);
+    }, [tree]);
+
     // 検索結果を選択したときの処理
     const handleSelectSearchResult = (index: number) => {
         if (index >= 0 && index < searchResults.length) {
             setSelectedResultIndex(index);
             const result = searchResults[index];
             updateHighlightedPath(result.path);
+            // 選択した検索結果のパスにある親ノードを全て展開する
+            setExpandedTree(expandNodesInPath(tree, result.path));
         }
     };
 
@@ -93,6 +106,8 @@ export function useSearch({ tree, nodeTypes }: UseSearchProps): UseSearchReturn 
         setIsSearchFocused(false);
         // 選択したノードをハイライト
         updateHighlightedPath(result.path);
+        // 選択したノードとその親ノードを全て展開
+        setExpandedTree(expandNodesInPath(tree, result.path));
     };
 
     // キーボードイベントの処理関数
@@ -145,5 +160,7 @@ export function useSearch({ tree, nodeTypes }: UseSearchProps): UseSearchReturn 
         handleSearchKeyDown,
         updateHighlightedPath,
         setFocusMode,
+        expandedTree,
+        setExpandedTree,
     };
 }
