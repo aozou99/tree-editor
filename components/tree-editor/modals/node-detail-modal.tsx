@@ -18,6 +18,7 @@ import { useI18n } from '@/utils/i18n/i18n-context';
 import { IconEditor } from '../media/icon-editor';
 import { FieldEditor } from '../fields/field-editor';
 import { FieldDisplay } from '../fields/field-display';
+import { FieldTypeLabel } from '../fields/field-type-label';
 
 interface NodeDetailModalProps {
     node: TreeNode;
@@ -95,36 +96,7 @@ function FieldDisplayWrapper({
                 <div key={field.id} className='mb-4'>
                     <div className='flex items-center mb-1'>
                         <div className='text-sm font-medium text-foreground'>{field.name}</div>
-                        {field.type === 'text' && (
-                            <span className='ml-2 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 rounded text-[10px]'>
-                                Text
-                            </span>
-                        )}
-                        {field.type === 'link' && (
-                            <span className='ml-2 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded text-[10px]'>
-                                URL
-                            </span>
-                        )}
-                        {field.type === 'textarea' && (
-                            <span className='ml-2 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 rounded text-[10px]'>
-                                Text Area
-                            </span>
-                        )}
-                        {field.type === 'youtube' && (
-                            <span className='ml-2 px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 rounded text-[10px]'>
-                                YouTube
-                            </span>
-                        )}
-                        {field.type === 'image' && (
-                            <span className='ml-2 px-1.5 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded text-[10px]'>
-                                Image
-                            </span>
-                        )}
-                        {field.type === 'audio' && (
-                            <span className='ml-2 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 rounded text-[10px]'>
-                                Audio
-                            </span>
-                        )}
+                        <FieldTypeLabel type={field.type} />
                     </div>
 
                     {field.type === 'audio' ? (

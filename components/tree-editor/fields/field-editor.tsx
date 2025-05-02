@@ -10,6 +10,7 @@ import { YouTubeEmbed } from '../media/youtube-embed';
 import { ImageUpload } from '../media/image-upload';
 import { AudioUpload } from '../media/audio-upload';
 import { useI18n } from '@/utils/i18n/i18n-context';
+import { FieldTypeLabel } from './field-type-label';
 
 interface FieldEditorProps {
     field: CustomField;
@@ -38,50 +39,6 @@ export function FieldEditor({
 }: FieldEditorProps) {
     const { t } = useI18n();
 
-    // フィールドタイプに応じたカラーラベルを生成
-    const getTypeLabel = () => {
-        switch (field.type) {
-            case 'text':
-                return (
-                    <span className='ml-2 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 rounded text-[10px]'>
-                        Text
-                    </span>
-                );
-            case 'textarea':
-                return (
-                    <span className='ml-2 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 rounded text-[10px]'>
-                        Text Area
-                    </span>
-                );
-            case 'link':
-                return (
-                    <span className='ml-2 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded text-[10px]'>
-                        URL
-                    </span>
-                );
-            case 'youtube':
-                return (
-                    <span className='ml-2 px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 rounded text-[10px]'>
-                        YouTube
-                    </span>
-                );
-            case 'image':
-                return (
-                    <span className='ml-2 px-1.5 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded text-[10px]'>
-                        Image
-                    </span>
-                );
-            case 'audio':
-                return (
-                    <span className='ml-2 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 rounded text-[10px]'>
-                        Audio
-                    </span>
-                );
-            default:
-                return null;
-        }
-    };
-
     return (
         <div className='space-y-2 p-3 border rounded-md bg-background'>
             <div className='flex items-center justify-between gap-2 mb-2'>
@@ -90,7 +47,7 @@ export function FieldEditor({
                         <span className='text-xs font-medium text-muted-foreground'>
                             {t('dialogs.nodeType.fieldNameLabel')}
                         </span>
-                        {getTypeLabel()}
+                        <FieldTypeLabel type={field.type} />
                     </div>
                     <Input
                         id={`field-name-${field.id}`}
