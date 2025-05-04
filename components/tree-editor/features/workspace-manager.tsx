@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditIcon, Trash2Icon, CheckIcon, FolderIcon, PlusIcon, ChevronDownIcon } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 import type { Workspace } from '@/components/tree-editor/utils/workspace-utils';

@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { validateImportData, createExportData } from '@/components/tree-editor/utils/tree-data-utils';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import {
     getSampleById,
     organizationSample,
