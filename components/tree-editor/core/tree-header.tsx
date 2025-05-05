@@ -12,7 +12,6 @@ import {
     DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { WorkspaceManager } from '@/components/tree-editor/features/workspace-manager';
-import { LanguageSwitcher } from '@/components/tree-editor/features/language-switcher';
 import { useI18n } from '@/utils/i18n/i18n-context';
 
 interface TreeHeaderProps {
@@ -102,8 +101,6 @@ export function TreeHeader({
                                 onWorkspaceChange={handleWorkspaceChange}
                                 onCreateWorkspace={handleCreateWorkspace}
                             />
-
-                            <LanguageSwitcher />
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

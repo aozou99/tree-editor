@@ -21,7 +21,7 @@ export function LanguageSwitcher() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant='outline' size='sm' className='h-9 px-2 sm:px-3 gap-1'>
+                <Button variant='ghost' size='sm' className='h-9 px-2 sm:px-3 gap-1'>
                     <Globe size={16} />
                     <span className='hidden md:inline'>{locale === 'ja' ? '日本語' : 'English'}</span>
                 </Button>
