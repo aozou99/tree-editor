@@ -116,7 +116,12 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
             if (renameWorkspaceId === activeWorkspaceId) {
                 const workspace = loadWorkspace(renameWorkspaceId);
                 if (workspace) {
-                    onWorkspaceChange(workspace);
+                    // 名前を変更した場合、ツリータイトルも同期して更新
+                    const updatedWorkspace = {
+                        ...workspace,
+                        treeTitle: renameWorkspaceName, // ツリータイトルもワークスペース名と一致させる
+                    };
+                    onWorkspaceChange(updatedWorkspace);
                 }
             }
         } else {
@@ -209,7 +214,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                     <DropdownMenuItem
                                         key={workspace.id}
                                         className='flex items-center justify-between py-2'
-                                        onSelect={(e) => {
+                                        onSelect={(e: Event) => {
                                             e.preventDefault();
                                             handleSwitchWorkspace(workspace.id);
                                         }}
@@ -230,7 +235,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                                             variant='ghost'
                                                             size='icon'
                                                             className='h-6 w-6'
-                                                            onClick={(e) => {
+                                                            onClick={(e: React.MouseEvent) => {
                                                                 e.stopPropagation();
                                                                 openRenameDialog(workspace.id, workspace.name);
                                                             }}
@@ -249,7 +254,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                                                             variant='ghost'
                                                             size='icon'
                                                             className='h-6 w-6 text-destructive'
-                                                            onClick={(e) => {
+                                                            onClick={(e: React.MouseEvent) => {
                                                                 e.stopPropagation();
                                                                 openDeleteDialog(workspace.id, workspace.name);
                                                             }}
@@ -271,7 +276,7 @@ export function WorkspaceManager({ activeWorkspaceId, onWorkspaceChange, onCreat
                         )}
                         <DropdownMenuItem
                             className='py-2'
-                            onSelect={(e) => {
+                            onSelect={(e: Event) => {
                                 e.preventDefault();
                                 setIsCreateDialogOpen(true);
                                 setIsDropdownOpen(false);

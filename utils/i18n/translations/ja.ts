@@ -62,7 +62,6 @@ export const ja = {
         noWorkspaces: 'ワークスペースがありません',
         defaultName: 'デフォルトワークスペース',
         untitledName: '無題のワークスペース',
-        defaultTreeTitle: '{name}のツリー',
         switch: 'ワークスペース切替',
         noWorkspace: 'ワークスペースなし',
         createTitle: '新規ワークスペース作成',

@@ -62,7 +62,6 @@ export const en = {
         noWorkspaces: 'No workspaces',
         defaultName: 'Default Workspace',
         untitledName: 'Untitled Workspace',
-        defaultTreeTitle: "{{name}}'s Tree",
         switch: 'Switch Workspace',
         noWorkspace: 'No Workspace',
         createTitle: 'Create New Workspace',

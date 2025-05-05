@@ -143,10 +143,15 @@ function TreeEditor() {
     const saveCurrentWorkspace = useCallback(() => {
         if (!activeWorkspaceId) return;
 
+        // 現在のワークスペース情報を読み込み
+        const currentWorkspace = loadWorkspace(activeWorkspaceId);
+        if (!currentWorkspace) return;
+
+        // ワークスペース名をツリータイトルと同期させる
         const workspace: Workspace = {
             id: activeWorkspaceId,
-            name: loadWorkspace(activeWorkspaceId)?.name || t('workspace.untitledName'),
-            createdAt: loadWorkspace(activeWorkspaceId)?.createdAt || new Date().toISOString(),
+            name: treeTitle, // ワークスペース名をツリータイトルと一致させる
+            createdAt: currentWorkspace.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             tree,
             nodeTypes,
@@ -154,7 +159,7 @@ function TreeEditor() {
         };
 
         debouncedSaveWorkspace(workspace);
-    }, [activeWorkspaceId, tree, nodeTypes, treeTitle, debouncedSaveWorkspace, t]);
+    }, [activeWorkspaceId, tree, nodeTypes, treeTitle, debouncedSaveWorkspace]);
 
     // ワークスペースを切り替える関数
     const handleWorkspaceChange = (workspace: Workspace) => {
@@ -174,7 +179,7 @@ function TreeEditor() {
         const newWorkspace = createWorkspace(name, {
             tree: sample.tree,
             nodeTypes: sample.nodeTypes,
-            treeTitle: t('workspace.defaultTreeTitle', { name }),
+            treeTitle: name, // 入力された名前をそのままツリータイトルとして使用
         });
 
         // 作成したワークスペースを表示
