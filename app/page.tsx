@@ -6,7 +6,6 @@ export default function Home() {
     return (
         <I18nProvider>
             <div className='container mx-auto p-6'>
-                <h1 className='mb-6 text-3xl font-bold'>ツリーエディター</h1>
                 <TreeEditor />
             </div>
         </I18nProvider>

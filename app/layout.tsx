@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Header } from '@/components/ui/header';
 
 const descriptions = {
     ja: 'NodeViewは、テキスト・画像・動画・音声など多様なノードを自由に定義・追加し、家系図や組織図、ジャンル分類など様々な情報を体系的に整理・公開できるキャッチーで柔軟なノードビューツールです。',
@@ -28,7 +29,10 @@ export default function RootLayout({
                 <link rel='icon' type='image/png' sizes='48x48' href='/favicon-48x48.png' />
                 <link rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png' />
             </head>
-            <body>{children}</body>
+            <body>
+                <Header />
+                {children}
+            </body>
         </html>
     );
 }

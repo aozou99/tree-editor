@@ -9,6 +9,7 @@
 
 # cloudflare
 /.open-next/
+/.wrangler/
 
 # production
 /build
