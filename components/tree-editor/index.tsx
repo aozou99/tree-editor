@@ -63,7 +63,6 @@ function TreeEditor() {
     const [nodeTypes, setNodeTypes] = useState<NodeType[]>(initialNodeTypes);
     const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState<string>('');
-    const [isEditingTitle, setIsEditingTitle] = useState<boolean>(false);
     const [treeTitle, setTreeTitle] = useState<string>(organizationSample.treeTitle);
     const [lastSaved, setLastSaved] = useState<string | null>(null);
     const [isResetDialogOpen, setIsResetDialogOpen] = useState<boolean>(false);
@@ -575,11 +574,8 @@ function TreeEditor() {
             {/* ヘッダー部分 */}
             <TreeHeader
                 treeTitle={treeTitle}
-                isEditingTitle={isEditingTitle}
                 lastSaved={lastSaved}
                 activeWorkspaceId={activeWorkspaceId}
-                setTreeTitle={setTreeTitle}
-                setIsEditingTitle={setIsEditingTitle}
                 handleWorkspaceChange={handleWorkspaceChange}
                 handleCreateWorkspace={handleCreateWorkspace}
                 exportTreeData={exportTreeData}
