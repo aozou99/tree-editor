@@ -1,27 +1,26 @@
 'use client';
 
-import type React from 'react';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { validateImportData, createExportData } from '@/components/tree-editor/utils/tree-data-utils';
-import { toast } from '@/hooks/use-toast';
+import { useI18n } from '@/utils/i18n/i18n-context';
 import {
     getSampleById,
     organizationSample,
     type SampleType,
     allSamples,
 } from '@/components/tree-editor/features/sample-selector/sample-data';
-import type { Workspace } from '@/components/tree-editor/utils/workspace-utils';
-import {
-    loadWorkspaceList,
-    loadWorkspace,
-    createWorkspace,
-    saveWorkspace,
-} from '@/components/tree-editor/utils/workspace-utils';
-import { useI18n } from '@/utils/i18n/i18n-context';
 
+// コアコンポーネント
+import { TreeHeader } from '@/components/tree-editor/core/tree-header';
+import { TreeNodeComponent } from '@/components/tree-editor/core/tree-node';
+
+// モーダルコンポーネント
+import { NodeCreateModal } from '@/components/tree-editor/modals/node-create-modal';
+import { NodeDetailModal } from '@/components/tree-editor/modals/node-detail-modal';
+import { NodeTypeModal } from '@/components/tree-editor/modals/node-type-modal';
+
+// UI コンポーネント
 import {
     Dialog,
     DialogContent,
@@ -44,59 +43,113 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-import { TreeHeader } from '@/components/tree-editor/core/tree-header';
-import { TreeNodeComponent } from '@/components/tree-editor/core/tree-node';
+// カスタムフック
 import { useTreeDragDrop } from '@/components/tree-editor/hooks/use-tree-drag-drop';
-import { NodeCreateModal } from '@/components/tree-editor/modals/node-create-modal';
-import { NodeDetailModal } from '@/components/tree-editor/modals/node-detail-modal';
-import { NodeTypeModal } from '@/components/tree-editor/modals/node-type-modal';
-import { TreeNode, NodeType, FieldType } from '@/components/tree-editor/types';
-import SearchFeature from '@/components/tree-editor/features/search/search-feature';
+import { useTreeOperations } from '@/components/tree-editor/hooks/use-tree-operations';
+import { useTreeModals } from '@/components/tree-editor/hooks/use-tree-modals';
+import { useWorkspaceManager } from '@/components/tree-editor/hooks/use-workspace-manager';
+import { useImportExport } from '@/components/tree-editor/hooks/use-import-export';
 import { useSearch } from '@/components/tree-editor/hooks/use-search';
+
+// 機能コンポーネント
+import SearchFeature from '@/components/tree-editor/features/search/search-feature';
+
+// 型定義
+import { TreeNode } from '@/components/tree-editor/types';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;
 const initialTree = organizationSample.tree;
 
 function TreeEditor() {
-    const [tree, setTree] = useState<TreeNode[]>(initialTree);
-    const [nodeTypes, setNodeTypes] = useState<NodeType[]>(initialNodeTypes);
-    const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
-    const [editingName, setEditingName] = useState<string>('');
-    const [treeTitle, setTreeTitle] = useState<string>(organizationSample.treeTitle);
-    const [lastSaved, setLastSaved] = useState<string | null>(null);
-    const [isResetDialogOpen, setIsResetDialogOpen] = useState<boolean>(false);
+    const { t } = useI18n();
     const [currentSampleId, setCurrentSampleId] = useState<SampleType>('organization');
 
-    // ワークスペース管理関連の状態
-    const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
-    const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(true);
+    // ツリー操作のカスタムフック
+    const {
+        tree,
+        setTree,
+        nodeTypes,
+        setNodeTypes,
+        treeTitle,
+        setTreeTitle,
+        editingNodeId,
+        editingName,
+        setEditingName,
+        toggleExpand,
+        addNode,
+        deleteNode,
+        startEditing,
+        saveNodeName,
+        cancelEditing,
+        updateNodeDetails,
+        updateNodeTypes,
+        resetTree,
+    } = useTreeOperations({
+        initialTree,
+        initialNodeTypes,
+        initialTreeTitle: organizationSample.treeTitle,
+    });
 
-    // TreeEditor関数内で、stateの宣言部分の後に以下を追加
-    const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
-    const [importData, setImportData] = useState<string>('');
-    const [importError, setImportError] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    // モーダル管理のカスタムフック
+    const {
+        selectedNode,
+        isDetailModalOpen,
+        setIsDetailModalOpen,
+        isNodeTypeModalOpen,
+        setIsNodeTypeModalOpen,
+        isNodeCreateModalOpen,
+        setIsNodeCreateModalOpen,
+        addingToParentId,
+        openAddChildModal,
+        openAddRootNodeModal,
+        openNodeDetailModal,
+        isSampleSelectorOpen,
+        setIsSampleSelectorOpen,
+        isResetDialogOpen,
+        setIsResetDialogOpen,
+        isImportDialogOpen,
+        setIsImportDialogOpen,
+        importData,
+        setImportData,
+        importError,
+        setImportError,
+    } = useTreeModals();
 
-    // 詳細モーダル用の状態
-    const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+    // ワークスペース管理のカスタムフック
+    const {
+        activeWorkspaceId,
+        lastSaved,
+        isWorkspaceLoading,
+        saveCurrentWorkspace,
+        handleWorkspaceChange,
+        handleCreateWorkspace,
+    } = useWorkspaceManager({
+        defaultTreeTitle: organizationSample.treeTitle,
+        defaultTree: initialTree,
+        defaultNodeTypes: initialNodeTypes,
+        onWorkspaceChange: (newTree, newNodeTypes, newTitle) => {
+            setTree(newTree);
+            setNodeTypes(newNodeTypes);
+            setTreeTitle(newTitle);
+        },
+    });
 
-    // ノードタイプモーダル用の状態
-    const [isNodeTypeModalOpen, setIsNodeTypeModalOpen] = useState<boolean>(false);
-    const [selectedNodeType, setSelectedNodeType] = useState<NodeType | null>(null);
+    // インポート/エクスポーネート機能のカスタムフック
+    const { fileInputRef, openFileSelector, handleFileChange, executeImport, exportTreeData } = useImportExport({
+        onImportSuccess: (newTree, newNodeTypes, newTitle) => {
+            setTree(newTree);
+            setNodeTypes(newNodeTypes);
+            if (newTitle) {
+                setTreeTitle(newTitle);
+            }
+        },
+        setImportData,
+        setImportError,
+        setIsImportDialogOpen,
+    });
 
-    // ノード作成モーダル用の状態
-    const [isNodeCreateModalOpen, setIsNodeCreateModalOpen] = useState<boolean>(false);
-    const [addingToParentId, setAddingToParentId] = useState<string | undefined>(undefined);
-
-    // サンプル選択モーダル
-    const [isSampleSelectorOpen, setIsSampleSelectorOpen] = useState<boolean>(false);
-
-    // i18n
-    const { t } = useI18n();
-
-    // ドラッグ＆ドロップのカスタムフックを使用
+    // ドラッグ＆ドロップのカスタムフック
     const {
         draggedNodeId,
         dragOverNodeId,
@@ -112,7 +165,7 @@ function TreeEditor() {
         handleRootDrop,
     } = useTreeDragDrop(tree, setTree);
 
-    // 検索機能のカスタムフックをindex.tsxで呼び出し
+    // 検索機能のカスタムフック
     const {
         searchQuery,
         setSearchQuery,
@@ -129,444 +182,91 @@ function TreeEditor() {
         handleOpenDetailModal,
         handleSearchKeyDown,
         expandedTree,
-        setExpandedTree,
     } = useSearch({ tree, nodeTypes });
 
-    // 自動保存のためのデバウンス関数
-    const debouncedSaveWorkspace = useCallback((workspace: Workspace) => {
-        saveWorkspace(workspace);
-        setLastSaved(new Date().toISOString());
-    }, []);
+    // 自動保存のための状態と参照を設定
+    const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const isInitialMountRef = useRef(true);
 
-    // 現在のワークスペースデータを保存する関数
-    const saveCurrentWorkspace = useCallback(() => {
-        if (!activeWorkspaceId) return;
+    // 以前のデータを参照として保持
+    const treeRef = useRef(tree);
+    const nodeTypesRef = useRef(nodeTypes);
+    const treeTitleRef = useRef(treeTitle);
 
-        // 現在のワークスペース情報を読み込み
-        const currentWorkspace = loadWorkspace(activeWorkspaceId);
-        if (!currentWorkspace) return;
+    // 自動保存の依存関係の安定化のために、saveCurrentWorkspaceを参照として保持
+    const saveCurrentWorkspaceRef = useRef(saveCurrentWorkspace);
 
-        // ワークスペース名をツリータイトルと同期させる
-        const workspace: Workspace = {
-            id: activeWorkspaceId,
-            name: treeTitle, // ワークスペース名をツリータイトルと一致させる
-            createdAt: currentWorkspace.createdAt || new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            tree,
-            nodeTypes,
-            treeTitle,
+    // saveCurrentWorkspaceが変更されたらrefを更新
+    useEffect(() => {
+        saveCurrentWorkspaceRef.current = saveCurrentWorkspace;
+    }, [saveCurrentWorkspace]);
+
+    // ツリーデータが変更されたときに自動保存を効率的に処理する
+    useEffect(() => {
+        // 初回マウント時は保存しない
+        if (isInitialMountRef.current) {
+            isInitialMountRef.current = false;
+            treeRef.current = tree;
+            nodeTypesRef.current = nodeTypes;
+            treeTitleRef.current = treeTitle;
+            return;
+        }
+
+        // ワークスペースがロード中または存在しない場合は何もしない
+        if (isWorkspaceLoading || !activeWorkspaceId) {
+            return;
+        }
+
+        // データに変更があるか確認
+        const hasTreeChanged = treeRef.current !== tree;
+        const hasNodeTypesChanged = nodeTypesRef.current !== nodeTypes;
+        const hasTitleChanged = treeTitleRef.current !== treeTitle;
+
+        // 変更があった場合のみ処理を実行
+        if (hasTreeChanged || hasNodeTypesChanged || hasTitleChanged) {
+            // 現在の値を参照に保存（次回の比較用）
+            treeRef.current = tree;
+            nodeTypesRef.current = nodeTypes;
+            treeTitleRef.current = treeTitle;
+
+            // 既存のタイマーがあればクリアして新しいタイマーを設定
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current);
+            }
+
+            // 保存処理は少し遅延させる（複数の状態変更が同時に起こる可能性がある場合）
+            saveTimerRef.current = setTimeout(() => {
+                // 保存する際にはrefから最新の関数を呼び出す
+                saveCurrentWorkspaceRef.current(treeRef.current, nodeTypesRef.current, treeTitleRef.current);
+                saveTimerRef.current = null;
+            }, 300);
+        }
+
+        // クリーンアップ関数
+        return () => {
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current);
+            }
         };
-
-        debouncedSaveWorkspace(workspace);
-    }, [activeWorkspaceId, tree, nodeTypes, treeTitle, debouncedSaveWorkspace]);
-
-    // ワークスペースを切り替える関数
-    const handleWorkspaceChange = (workspace: Workspace) => {
-        setTree(workspace.tree);
-        setNodeTypes(workspace.nodeTypes);
-        setTreeTitle(workspace.treeTitle);
-        setActiveWorkspaceId(workspace.id);
-        setLastSaved(workspace.updatedAt);
-    };
-
-    // 新しいワークスペースを作成する関数
-    const handleCreateWorkspace = (name: string) => {
-        // サンプルデータを初期値として使用
-        const sample = getSampleById(currentSampleId) || organizationSample;
-
-        // 新しいワークスペースを作成
-        const newWorkspace = createWorkspace(name, {
-            tree: sample.tree,
-            nodeTypes: sample.nodeTypes,
-            treeTitle: name, // 入力された名前をそのままツリータイトルとして使用
-        });
-
-        // 作成したワークスペースを表示
-        handleWorkspaceChange(newWorkspace);
-
-        toast({
-            title: t('toast.workspaceCreated'),
-            description: t('toast.workspaceCreated', { name }),
-            duration: 3000,
-        });
-    };
-
-    // 初期化時にワークスペース情報を読み込む
-    useEffect(() => {
-        setIsWorkspaceLoading(true);
-
-        const { activeWorkspaceId: storedWorkspaceId, workspaces } = loadWorkspaceList();
-
-        // ワークスペースが存在しない場合は初期ワークスペースを作成
-        if (workspaces.length === 0) {
-            const sample = getSampleById('organization') || organizationSample;
-            const newWorkspace = createWorkspace(t('workspace.defaultName'), {
-                tree: sample.tree,
-                nodeTypes: sample.nodeTypes,
-                treeTitle: '組織図',
-            });
-
-            handleWorkspaceChange(newWorkspace);
-        } else if (storedWorkspaceId) {
-            // アクティブなワークスペースを読み込む
-            const workspace = loadWorkspace(storedWorkspaceId);
-            if (workspace) {
-                handleWorkspaceChange(workspace);
-            }
-        } else if (workspaces.length > 0) {
-            // アクティブでない場合は最初のワークスペースを表示
-            const workspace = loadWorkspace(workspaces[0].id);
-            if (workspace) {
-                handleWorkspaceChange(workspace);
-            }
-        }
-
-        setIsWorkspaceLoading(false);
-    }, [t]);
-
-    // ツリーデータが変更されたときに自動保存
-    useEffect(() => {
-        if (!isWorkspaceLoading && activeWorkspaceId) {
-            saveCurrentWorkspace();
-        }
-    }, [tree, nodeTypes, treeTitle, activeWorkspaceId, isWorkspaceLoading, saveCurrentWorkspace]);
-
-    // tree が変更されたら expandedTree も更新
-    useEffect(() => {
-        setExpandedTree(tree);
-    }, [tree, setExpandedTree]);
+    }, [tree, nodeTypes, treeTitle, activeWorkspaceId, isWorkspaceLoading]);
 
     // サンプルを変更する関数
     const handleSelectSample = (sampleId: SampleType) => {
         const sample = getSampleById(sampleId);
         if (!sample) return;
 
-        setTree(sample.tree);
-        setNodeTypes(sample.nodeTypes);
-        setTreeTitle(sample.treeTitle);
+        resetTree(sample.tree, sample.nodeTypes, sample.treeTitle);
         setCurrentSampleId(sampleId);
-
-        // アクティブなワークスペースがある場合は更新
-        if (activeWorkspaceId) {
-            saveCurrentWorkspace();
-        }
-
-        toast({
-            title: t('toast.sampleChanged'),
-            description: t('toast.sampleChanged', { name: sample.name }),
-            duration: 3000,
-        });
     };
 
-    // データをリセット
-    const resetTreeData = () => {
-        if (activeWorkspaceId) {
-            const workspace = loadWorkspace(activeWorkspaceId);
-            if (workspace) {
-                // サンプルデータで現在のワークスペースをリセット
-                const sample = getSampleById(currentSampleId) || organizationSample;
-
-                setTree(sample.tree);
-                setNodeTypes(sample.nodeTypes);
-                setTreeTitle(sample.treeTitle);
-
-                // 更新したデータを保存
-                saveCurrentWorkspace();
-            }
-        } else {
-            // ワークスペースがない場合は単にサンプルデータをセット
-            const sample = getSampleById(currentSampleId) || organizationSample;
-            setTree(sample.tree);
-            setNodeTypes(sample.nodeTypes);
-            setTreeTitle(sample.treeTitle);
-        }
-
-        setIsResetDialogOpen(false);
-
-        toast({
-            title: t('toast.dataReset'),
-            description: t('toast.dataReset'),
-            duration: 3000,
-        });
-    };
-
-    // ツリーデータをJSONとしてエクスポーネント
-    const exportTreeData = () => {
-        try {
-            // エクスポートするデータを準備
-            const exportData = createExportData(tree, nodeTypes, treeTitle);
-
-            // JSONに変換
-            const jsonData = JSON.stringify(exportData, null, 2);
-
-            // ダウンロードリンクを作成
-            const blob = new Blob([jsonData], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${treeTitle.replace(/\s+/g, '-').toLowerCase()}-${
-                new Date().toISOString().split('T')[0]
-            }.json`;
-            document.body.appendChild(link);
-            link.click();
-
-            // クリーンアップ
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            toast({
-                title: t('toast.exportComplete'),
-                description: t('toast.exportComplete'),
-                duration: 3000,
-            });
-        } catch (error) {
-            console.error(t('debug.exportError'), error);
-            toast({
-                title: t('toast.exportError'),
-                description: t('toast.exportError'),
-                variant: 'destructive',
-                duration: 5000,
-            });
-        }
-    };
-
-    // ファイル選択ダイアログを開く
-    const openFileSelector = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
-
-    // 選択されたファイルを読み込む
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const content = event.target?.result as string;
-                setImportData(content);
-                setImportError(null);
-                setIsImportDialogOpen(true);
-            } catch (error) {
-                console.error(t('debug.fileReadError'), error);
-                setImportError(t('dialogs.import.errors.fileReadError'));
-                toast({
-                    title: t('toast.importError'),
-                    description: t('toast.importError'),
-                    variant: 'destructive',
-                    duration: 5000,
-                });
-            }
-        };
-        reader.onerror = () => {
-            setImportError(t('dialogs.import.errors.fileReadError'));
-            toast({
-                title: t('toast.importError'),
-                description: t('toast.importError'),
-                variant: 'destructive',
-                duration: 5000,
-            });
-        };
-        reader.readAsText(file);
-
-        // ファイル選択をリセット
-        if (e.target) {
-            e.target.value = '';
-        }
-    };
-
-    // インポートを実行
-    const executeImport = () => {
-        try {
-            if (!importData) {
-                setImportError(t('dialogs.import.errors.noData'));
-                return;
-            }
-
-            const parsedData = JSON.parse(importData);
-
-            // データの検証
-            const validation = validateImportData(parsedData);
-            if (!validation.valid) {
-                setImportError(
-                    validation.error
-                        ? t(`dialogs.import.errors.${validation.error}`)
-                        : t('dialogs.import.errors.invalidFormat'),
-                );
-                return;
-            }
-
-            // データをインポート
-            setTree(parsedData.tree);
-            setNodeTypes(parsedData.nodeTypes);
-
-            // タイトルがあれば設定
-            if (parsedData.treeTitle) {
-                setTreeTitle(parsedData.treeTitle);
-            }
-
-            // ワークスペースにデータを保存
-            if (activeWorkspaceId) {
-                saveCurrentWorkspace();
-            }
-
-            setIsImportDialogOpen(false);
-            setImportData('');
-
-            toast({
-                title: t('toast.importComplete'),
-                description: t('toast.importComplete'),
-                duration: 3000,
-            });
-        } catch (error) {
-            console.error(t('debug.importError'), error);
-            setImportError(t('dialogs.import.errors.parseError'));
-            toast({
-                title: t('toast.importError'),
-                description: t('toast.importError'),
-                variant: 'destructive',
-                duration: 5000,
-            });
-        }
-    };
-
-    // ノードの展開/折りたたみを切り替える
-    const toggleExpand = (nodeId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        const updateNode = (nodes: TreeNode[]): TreeNode[] => {
-            return nodes.map((node) => {
-                if (node.id === nodeId) {
-                    return { ...node, isExpanded: !node.isExpanded };
-                }
-                if (node.children.length > 0) {
-                    return { ...node, children: updateNode(node.children) };
-                }
-                return node;
-            });
-        };
-        setTree(updateNode(tree));
-    };
-
-    // 子ノード追加モーダルを開く
-    const openAddChildModal = (parentId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setAddingToParentId(parentId);
-        setIsNodeCreateModalOpen(true);
-    };
-
-    // 新しいノードを追加する
-    const handleAddNode = (newNode: TreeNode) => {
-        if (addingToParentId) {
-            // 子ノードとして追加
-            const updateNode = (nodes: TreeNode[]): TreeNode[] => {
-                return nodes.map((node) => {
-                    if (node.id === addingToParentId) {
-                        return {
-                            ...node,
-                            isExpanded: true, // 親ノードを展開
-                            children: [...node.children, newNode],
-                        };
-                    }
-                    if (node.children.length > 0) {
-                        return { ...node, children: updateNode(node.children) };
-                    }
-                    return node;
-                });
-            };
-            setTree(updateNode(tree));
-        } else {
-            // ルートノードとして追加
-            setTree([...tree, newNode]);
-        }
-    };
-
-    // ノードを削除
-    const deleteNode = (nodeId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-
-        const removeNode = (nodeId: string, nodes: TreeNode[]): TreeNode[] => {
-            // ルートレベルでノードを検索して削除
-            const filteredNodes = nodes.filter((node) => node.id !== nodeId);
-
-            // 子ノードを再帰的に検索
-            return filteredNodes.map((node) => {
-                if (node.children && node.children.length > 0) {
-                    return {
-                        ...node,
-                        children: removeNode(nodeId, node.children),
-                    };
-                }
-                return node;
-            });
-        };
-
-        setTree(removeNode(nodeId, tree));
-    };
-
-    // ノード名の編集を開始
-    const startEditing = (node: TreeNode, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setEditingNodeId(node.id);
-        setEditingName(node.name);
-    };
-
-    // ノード名の編集を保存
-    const saveNodeName = (e?: React.MouseEvent) => {
-        e?.stopPropagation();
-        if (!editingNodeId) return;
-
-        const updateNode = (nodes: TreeNode[]): TreeNode[] => {
-            return nodes.map((node) => {
-                if (node.id === editingNodeId) {
-                    return { ...node, name: editingName };
-                }
-                if (node.children.length > 0) {
-                    return { ...node, children: updateNode(node.children) };
-                }
-                return node;
-            });
-        };
-        setTree(updateNode(tree));
-        setEditingNodeId(null);
-    };
-
-    // 編集のキャンセル
-    const cancelEditing = () => {
-        setEditingNodeId(null);
-    };
-
-    // ルートレベルに新しいノードを追加
-    const addRootNode = () => {
-        setAddingToParentId(undefined);
-        setIsNodeCreateModalOpen(true);
-    };
-
-    // ノードをクリックして詳細モーダルを表示
+    // リセットされたフックに対応するツリーノードクリックハンドラ
     const handleNodeClick = (node: TreeNode) => {
-        setSelectedNode(node);
-        setIsDetailModalOpen(true);
+        openNodeDetailModal(node);
     };
 
-    // ノードの詳細情報を更新
-    const updateNodeDetails = (updatedNode: TreeNode) => {
-        const updateNode = (nodes: TreeNode[]): TreeNode[] => {
-            return nodes.map((node) => {
-                if (node.id === updatedNode.id) {
-                    return updatedNode;
-                }
-                if (node.children.length > 0) {
-                    return { ...node, children: updateNode(node.children) };
-                }
-                return node;
-            });
-        };
-
-        setTree(updateNode(tree));
-
-        // selectedNode も更新して UI に即時反映させる
-        setSelectedNode(updatedNode);
+    // ノードを追加するハンドラ
+    const handleAddNode = (newNode: TreeNode) => {
+        addNode(newNode, addingToParentId);
     };
 
     return (
@@ -578,12 +278,12 @@ function TreeEditor() {
                 activeWorkspaceId={activeWorkspaceId}
                 handleWorkspaceChange={handleWorkspaceChange}
                 handleCreateWorkspace={handleCreateWorkspace}
-                exportTreeData={exportTreeData}
+                exportTreeData={() => exportTreeData(tree, nodeTypes, treeTitle)}
                 openFileSelector={openFileSelector}
                 setIsSampleSelectorOpen={setIsSampleSelectorOpen}
                 setIsNodeTypeModalOpen={setIsNodeTypeModalOpen}
                 setIsResetDialogOpen={setIsResetDialogOpen}
-                addRootNode={addRootNode}
+                addRootNode={openAddRootNodeModal}
             />
 
             {/* 検索機能 */}
@@ -671,91 +371,7 @@ function TreeEditor() {
                 open={isNodeTypeModalOpen}
                 onOpenChange={setIsNodeTypeModalOpen}
                 nodeTypes={nodeTypes}
-                onSaveNodeTypes={(updatedNodeTypes, fieldChangeInfo) => {
-                    // ノードタイプの更新
-                    setNodeTypes(updatedNodeTypes);
-
-                    // フィールド変更情報がある場合は既存ノードに変更を反映
-                    if (fieldChangeInfo) {
-                        const { nodeTypeId, fieldChanges } = fieldChangeInfo;
-
-                        // 対象のノードタイプを持つすべてのノードを特定して更新
-                        const updateNodeCustomFields = (nodes: TreeNode[]): TreeNode[] => {
-                            return nodes.map((node) => {
-                                // このノードが対象のノードタイプを持つかチェック
-                                const needsUpdate = node.nodeType === nodeTypeId;
-
-                                // 子ノードも再帰的に更新
-                                const updatedChildren =
-                                    node.children.length > 0 ? updateNodeCustomFields(node.children) : node.children;
-
-                                // このノードが対象でない場合は子ノードだけ更新
-                                if (!needsUpdate) {
-                                    return { ...node, children: updatedChildren };
-                                }
-
-                                // このノードのカスタムフィールドを更新
-                                let updatedCustomFields = node.customFields ? [...node.customFields] : [];
-
-                                // 1. 削除されたフィールドを除去
-                                if (fieldChanges.removed.length > 0) {
-                                    updatedCustomFields = updatedCustomFields.filter(
-                                        (field) => !fieldChanges.removed.includes(field.fieldId || field.id),
-                                    );
-                                }
-
-                                // 2. 新規追加されたフィールドを追加
-                                fieldChanges.added.forEach((newField) => {
-                                    updatedCustomFields.push({
-                                        id: uuidv4(),
-                                        fieldId: newField.id,
-                                        name: newField.name,
-                                        type: newField.type,
-                                        value: '',
-                                    });
-                                });
-
-                                // 3. 名前変更されたフィールドを更新
-                                fieldChanges.renamed.forEach((rename) => {
-                                    const fieldIndex = updatedCustomFields.findIndex(
-                                        (f) => (f.fieldId || f.id) === rename.id,
-                                    );
-                                    if (fieldIndex !== -1) {
-                                        updatedCustomFields[fieldIndex] = {
-                                            ...updatedCustomFields[fieldIndex],
-                                            name: rename.newName,
-                                        };
-                                    }
-                                });
-
-                                // 4. タイプ変更されたフィールドを更新
-                                fieldChanges.typeChanged.forEach((typeChange) => {
-                                    const fieldIndex = updatedCustomFields.findIndex(
-                                        (f) => (f.fieldId || f.id) === typeChange.id,
-                                    );
-                                    if (fieldIndex !== -1) {
-                                        updatedCustomFields[fieldIndex] = {
-                                            ...updatedCustomFields[fieldIndex],
-                                            type: typeChange.newType as FieldType,
-                                            // タイプ変更時は値をリセット
-                                            value: '',
-                                        };
-                                    }
-                                });
-
-                                // 更新されたノードを返す
-                                return {
-                                    ...node,
-                                    customFields: updatedCustomFields,
-                                    children: updatedChildren,
-                                };
-                            });
-                        };
-
-                        // ツリー全体を更新
-                        setTree(updateNodeCustomFields(tree));
-                    }
-                }}
+                onSaveNodeTypes={updateNodeTypes}
             />
 
             {/* ノード作成モーダル */}
@@ -794,7 +410,9 @@ function TreeEditor() {
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setImportData('')}>{t('common.cancel')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={executeImport}>{t('common.import')}</AlertDialogAction>
+                        <AlertDialogAction onClick={() => executeImport(importData)}>
+                            {t('common.import')}
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -810,7 +428,14 @@ function TreeEditor() {
                         <Button variant='outline' onClick={() => setIsResetDialogOpen(false)}>
                             {t('common.cancel')}
                         </Button>
-                        <Button variant='destructive' onClick={resetTreeData}>
+                        <Button
+                            variant='destructive'
+                            onClick={() => {
+                                const sample = getSampleById(currentSampleId) || organizationSample;
+                                resetTree(sample.tree, sample.nodeTypes, sample.treeTitle);
+                                setIsResetDialogOpen(false);
+                            }}
+                        >
                             {t('common.reset')}
                         </Button>
                     </DialogFooter>
