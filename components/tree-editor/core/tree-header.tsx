@@ -46,9 +46,7 @@ export function TreeHeader({
         <div className='mb-4'>
             <div className='flex flex-wrap items-center justify-between gap-2 mb-2'>
                 <div className='flex items-center'>
-                    <h2 className='text-xl font-semibold mr-2'>
-                        {treeTitle}
-                    </h2>
+                    <h2 className='text-xl font-semibold mr-2'>{treeTitle}</h2>
                     {lastSaved && (
                         <span className='text-xs text-muted-foreground whitespace-nowrap'>
                             {t('common.lastSaved')}: {new Date(lastSaved).toLocaleTimeString()}
