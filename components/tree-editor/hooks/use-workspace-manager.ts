@@ -148,7 +148,7 @@ export function useWorkspaceManager({
         setIsWorkspaceLoading(true);
 
         const { activeWorkspaceId: storedWorkspaceId, workspaces } = loadWorkspaceList();
-        
+
         // ワークスペースが存在しない場合は初期ワークスペースを作成
         if (workspaces.length === 0) {
             const newWorkspace = createWorkspace(t('workspace.defaultName'), {
