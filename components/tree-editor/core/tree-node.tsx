@@ -123,9 +123,17 @@ export function TreeNodeComponent({
                 onClick={() => onNodeClick(node)}
             >
                 {hasChildren ? (
-                    <button onClick={(e) => onToggleExpand(node.id, e)} className='mr-1 text-muted-foreground'>
-                        {node.isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    </button>
+                    <Button
+                        size='icon'
+                        variant='ghost'
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => onToggleExpand(node.id, e)}
+                        className='mr-1 h-7 w-7 flex items-center justify-center'
+                        tabIndex={0}
+                        aria-label={node.isExpanded ? 'Collapse' : 'Expand'}
+                        type='button'
+                    >
+                        {node.isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                    </Button>
                 ) : (
                     <div className='w-4 mr-1' />
                 )}
@@ -144,7 +152,7 @@ export function TreeNodeComponent({
                         <Button
                             size='icon'
                             variant='ghost'
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                                 e.stopPropagation();
                                 onCancelEditing();
                             }}
@@ -192,7 +200,7 @@ export function TreeNodeComponent({
                             <Button
                                 size='icon'
                                 variant='ghost'
-                                onClick={(e) => onAddChild(node.id, e)}
+                                onClick={(e: React.MouseEvent<HTMLButtonElement>) => onAddChild(node.id, e)}
                                 className='h-7 w-7'
                             >
                                 <Plus size={16} />
@@ -200,7 +208,7 @@ export function TreeNodeComponent({
                             <Button
                                 size='icon'
                                 variant='ghost'
-                                onClick={(e) => onStartEditing(node, e)}
+                                onClick={(e: React.MouseEvent<HTMLButtonElement>) => onStartEditing(node, e)}
                                 className='h-7 w-7'
                             >
                                 <Edit size={16} />
@@ -208,7 +216,7 @@ export function TreeNodeComponent({
                             <Button
                                 size='icon'
                                 variant='ghost'
-                                onClick={(e) => onDeleteNode(node.id, e)}
+                                onClick={(e: React.MouseEvent<HTMLButtonElement>) => onDeleteNode(node.id, e)}
                                 className='h-7 w-7'
                             >
                                 <Trash size={16} />
