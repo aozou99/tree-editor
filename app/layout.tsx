@@ -11,7 +11,7 @@ const descriptions = {
 export async function generateMetadata({ params }: { params: { locale?: string } }): Promise<Metadata> {
     const locale = params?.locale === 'en' ? 'en' : 'ja';
     return {
-        title: 'NodeView',
+        title: 'Tree Editor',
         description: descriptions[locale],
     };
 }

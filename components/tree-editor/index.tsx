@@ -35,6 +35,7 @@ import { useAutoSave } from '@/components/tree-editor/hooks/use-auto-save';
 
 // 型定義
 import { TreeNode } from '@/components/tree-editor/types';
+import { useDocumentTitle } from '@uidotdev/usehooks';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;
@@ -183,6 +184,9 @@ function TreeEditor() {
         resetTree(sample.tree, sample.nodeTypes, sample.treeTitle);
         setCurrentSampleId(sampleId);
     };
+
+    // ツリーのタイトルを設定
+    useDocumentTitle(`Tree Editor | ${treeTitle}`);
 
     // ツリーノードクリックハンドラ
     const handleNodeClick = (node: TreeNode) => openNodeDetailModal(node);
