@@ -183,6 +183,9 @@ function TreeEditor() {
 
     // Enterキーで詳細モーダルを開く
     const handleSearchKeyDownWithModal = (e: React.KeyboardEvent<Element>) => {
+        // IME変換確定時のEnterキーを無視
+        if (e.nativeEvent.isComposing) return;
+
         if (e.key === 'Enter' && searchResults.length > 0 && selectedResultIndex >= 0) {
             e.preventDefault();
             handleOpenDetailModal(searchResults[selectedResultIndex]);
