@@ -36,6 +36,7 @@ import { useAutoSave } from '@/components/tree-editor/hooks/use-auto-save';
 // 型定義
 import { TreeNode } from '@/components/tree-editor/types';
 import { useDocumentTitle } from '@uidotdev/usehooks';
+import type { SearchResult } from '@/components/tree-editor/types/search-types';
 
 // 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
 const initialNodeTypes = organizationSample.nodeTypes;
@@ -171,10 +172,24 @@ function TreeEditor() {
         isSearchFocused,
         setIsSearchFocused,
         handleSelectSearchResult,
-        handleOpenDetailModal,
         handleSearchKeyDown,
         expandedTree,
     } = useSearch({ tree, nodeTypes });
+
+    // 検索結果クリックで詳細モーダルを開く
+    const handleOpenDetailModal = (result: SearchResult) => {
+        openNodeDetailModal(result.node);
+    };
+
+    // Enterキーで詳細モーダルを開く
+    const handleSearchKeyDownWithModal = (e: React.KeyboardEvent<Element>) => {
+        if (e.key === 'Enter' && searchResults.length > 0 && selectedResultIndex >= 0) {
+            e.preventDefault();
+            handleOpenDetailModal(searchResults[selectedResultIndex]);
+        } else {
+            handleSearchKeyDown(e);
+        }
+    };
 
     // サンプルを変更する関数
     const handleSelectSample = (sampleId: SampleType) => {
@@ -230,7 +245,7 @@ function TreeEditor() {
                 <SearchFeature
                     searchQuery={searchQuery}
                     onChange={setSearchQuery}
-                    onKeyDown={handleSearchKeyDown}
+                    onKeyDown={handleSearchKeyDownWithModal}
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setIsSearchFocused(false)}
                     inputRef={searchInputRef}
