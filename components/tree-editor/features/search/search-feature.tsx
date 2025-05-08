@@ -1,6 +1,6 @@
 'use client';
 
-import { SearchResults } from '../search-results';
+import { SearchResults } from './search-results';
 import SearchBar from './search-bar';
 import type { SearchResult } from '@/components/tree-editor/types/search-types';
 

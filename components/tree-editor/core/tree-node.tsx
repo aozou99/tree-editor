@@ -117,8 +117,8 @@ export function TreeNodeComponent({
                 className={cn(
                     'flex items-center py-1 px-2 group cursor-pointer',
                     depth > 0 && 'ml-6',
-                    isHighlighted ? 'bg-blue-50' : 'hover:bg-muted/50',
-                    isTargetNode && 'bg-blue-100 border-l-4 border-blue-400 pl-1',
+                    isHighlighted ? 'bg-blue-50 dark:bg-blue-900' : 'hover:bg-muted/50',
+                    isTargetNode && 'bg-blue-100 dark:bg-blue-800 border-l-4 border-blue-400 dark:border-blue-300 pl-1',
                 )}
                 onClick={() => onNodeClick(node)}
             >
