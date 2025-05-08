@@ -108,7 +108,7 @@ export function EmojiPicker({ onEmojiSelect, disabled = false }: EmojiPickerProp
             {isOpen && (
                 <div
                     ref={modalRef}
-                    className='absolute z-50 top-full right-0 mt-1 w-80 bg-white border rounded-md shadow-md'
+                    className='absolute z-50 top-full right-0 mt-1 w-80 bg-background border rounded-md shadow-md'
                 >
                     <div className='p-2 border-b'>
                         <div className='relative'>
