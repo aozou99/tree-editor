@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Header } from '@/components/ui/header';
+import { Header } from '@/components/header';
 import { I18nProvider } from '@/utils/i18n/i18n-context';
 
 const descriptions = {

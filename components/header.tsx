@@ -6,20 +6,21 @@ import { LanguageSwitcher } from '@/components/tree-editor/features/language-swi
 import { useEffect, useState } from 'react';
 
 export function Header() {
-    // テーマ状態管理
-    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-        if (typeof window !== 'undefined') {
-            return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
-        }
-        return 'light';
-    });
+    const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
+        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+        if (savedTheme) {
+            setTheme(savedTheme);
             document.documentElement.classList.remove('light', 'dark');
-            document.documentElement.classList.add(theme);
-            localStorage.setItem('theme', theme);
+            document.documentElement.classList.add(savedTheme);
         }
+    }, []);
+
+    useEffect(() => {
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(theme);
+        localStorage.setItem('theme', theme);
     }, [theme]);
 
     const toggleTheme = () => {

@@ -135,7 +135,7 @@ export function TreeNodeComponent({
                         {node.isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                     </Button>
                 ) : (
-                    <div className='w-4 mr-1' />
+                    <div className='w-7 mr-1' />
                 )}
 
                 {editingNodeId === node.id ? (
