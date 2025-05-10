@@ -17,6 +17,12 @@ export const ja = {
         error: 'エラー',
         success: '成功',
     },
+    auth: {
+        login: 'ログイン',
+        logout: 'ログアウト',
+        loginWithGoogle: 'Googleでログイン',
+        profile: 'プロフィール',
+    },
     header: {
         file: 'ファイル',
         settings: '設定',

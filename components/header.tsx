@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/tree-editor/features/language-switcher';
+import { LoginButton } from '@/components/auth/login-button';
 import { useEffect, useState } from 'react';
 
 export function Header() {
@@ -37,8 +38,10 @@ export function Header() {
                     <span className='text-xl font-bold leading-none flex items-center'>TreeEditor</span>
                 </Link>
 
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-4'>
                     <LanguageSwitcher />
+                    {/* ログインボタンを追加 */}
+                    <LoginButton />
                     {/* テーマ切り替えスイッチ */}
                     <button
                         onClick={toggleTheme}

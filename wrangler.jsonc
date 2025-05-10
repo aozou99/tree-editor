@@ -1,10 +1,18 @@
 {
     "main": ".open-next/worker.js",
-    "name": "nodeview",
+    "name": "tree-editor",
     "compatibility_date": "2025-03-25",
     "compatibility_flags": ["nodejs_compat"],
     "assets": {
         "directory": ".open-next/assets",
         "binding": "ASSETS"
-    }
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "tree-editor-db",
+            "database_id": "8ece4ea9-18e6-434d-8990-aad274ab1071",
+            "migrations_dir": "drizzle"
+        }
+    ]
 }
