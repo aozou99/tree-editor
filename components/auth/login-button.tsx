@@ -35,8 +35,10 @@ export function LoginButton() {
     // }
 
     return (
-        <Button variant='outline' size='sm' onClick={async () => null}>
-            {t('auth.login')}
-        </Button>
+        <form action='/api/auth/google' method='get'>
+            <Button variant='outline' size='sm'>
+                {t('auth.login')}
+            </Button>
+        </form>
     );
 }
