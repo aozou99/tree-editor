@@ -8,20 +8,21 @@ import { initContext } from '@/app/api/[[...hono]]/middleware/initContext';
 import { env } from 'hono/adapter';
 
 declare module 'hono' {
-    interface ContextVariableMap {
-        DB: DrizzleD1Database<typeof schema>;
-        env: CloudflareEnv;
-    }
+  interface ContextVariableMap {
+    DB: DrizzleD1Database<typeof schema>;
+    env: CloudflareEnv;
+  }
 }
+
 const app = new Hono().basePath('/api');
 app.use(logger());
 app.use(initContext);
 
-const route = app.route('/auth', authRouter);
+const routes = app.route('/auth', authRouter);
 
-export type AppType = typeof route;
+export type AppType = typeof routes;
 
-export const GET = handle(route);
-export const POST = handle(route);
-export const PATCH = handle(route);
-export const DELETE = handle(route);
+export const GET = handle(app);
+export const POST = handle(app);
+export const PATCH = handle(app);
+export const DELETE = handle(app);

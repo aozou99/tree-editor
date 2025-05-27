@@ -70,6 +70,7 @@
     "react-resizable-panels": "^2.1.9",
     "recharts": "^2.15.3",
     "sonner": "^1.7.4",
+    "swr": "^2.3.3",
     "tailwind-merge": "^2.6.0",
     "uuid": "latest",
     "vaul": "^0.9.9",

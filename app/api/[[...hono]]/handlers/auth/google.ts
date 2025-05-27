@@ -5,12 +5,10 @@ import {
   getAuth,
   oidcAuthMiddleware,
   processOAuthCallback,
-  revokeSession,
 } from '@hono/oidc-auth';
 import { eq } from 'drizzle-orm';
 import type { Context, OidcAuthClaims } from 'hono';
 import { createFactory } from 'hono/factory';
-import { getAuthUser } from '../../helpers/auth';
 import { users } from '@/db/schema';
 
 declare module 'hono' {
@@ -42,18 +40,6 @@ export const authGoogleHandler = factory.createHandlers(oidcAuthMiddleware(), as
 export const authGoogleCallbackHandler = factory.createHandlers(async c => {
   c.set('oidcClaimsHook', oidcClaimsHook);
   return processOAuthCallback(c);
-});
-
-export const authLogoutHandler = factory.createHandlers(async c => {
-  await revokeSession(c);
-  return c.redirect('/');
-});
-
-export const authUserHandler = factory.createHandlers(async c => {
-  const user = await getAuthUser(c);
-  return c.json({
-    user,
-  });
 });
 
 const makeUserIfNotExist = async (c: Context) => {
