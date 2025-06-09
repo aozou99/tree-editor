@@ -22,6 +22,7 @@ import {
 import { HistoryDialog } from '@/components/tree-editor/features/dialogs/history-dialog';
 import { SnapshotDialog } from '@/components/tree-editor/features/dialogs/snapshot-dialog';
 import { ImportExportGuideDialog } from '@/components/tree-editor/features/dialogs/import-export-guide-dialog';
+import { CompressionDebug } from '@/components/tree-editor/features/compression-debug';
 
 // 機能コンポーネント
 import SearchFeature from '@/components/tree-editor/features/search/search-feature';
@@ -401,6 +402,9 @@ function TreeEditor() {
                 isOpen={isImportExportGuideOpen}
                 onClose={() => setIsImportExportGuideOpen(false)}
             />
+
+            {/* 開発環境での圧縮統計デバッグ */}
+            <CompressionDebug />
         </div>
     );
 }

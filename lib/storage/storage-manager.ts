@@ -6,7 +6,7 @@ class StorageManager {
     private isAuthenticated = false;
     private storageType: 'local' | 'cloud' = 'local';
     private localAdapter = new LocalStorageAdapter();
-    private cloudAdapter = new CloudStorageAdapter();
+    private cloudAdapter = new CloudStorageAdapter({ compressionEnabled: true });
 
     setAuthenticated(authenticated: boolean) {
         this.isAuthenticated = authenticated;
@@ -32,6 +32,27 @@ class StorageManager {
 
     getAdapter(): StorageAdapter {
         return this.storageType === 'cloud' ? this.cloudAdapter : this.localAdapter;
+    }
+
+    /**
+     * クラウドストレージの圧縮統計を取得
+     */
+    getCompressionStats() {
+        return this.cloudAdapter.getCompressionStats();
+    }
+
+    /**
+     * クラウドストレージの圧縮統計をリセット
+     */
+    resetCompressionStats() {
+        this.cloudAdapter.resetCompressionStats();
+    }
+
+    /**
+     * クラウドストレージの圧縮機能を切り替え
+     */
+    setCompressionEnabled(enabled: boolean) {
+        this.cloudAdapter.setCompressionEnabled(enabled);
     }
 }
 

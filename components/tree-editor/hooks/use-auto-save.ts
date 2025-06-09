@@ -9,6 +9,8 @@ type AutoSaveProps = {
     activeTreeId?: string;
     saveCurrentTree: (tree: TreeNode[], nodeTypes: NodeType[], treeTitle: string) => void;
     delay?: number;
+    batchDelay?: number;
+    enableBatching?: boolean;
 };
 
 export function useAutoSave({
@@ -18,10 +20,15 @@ export function useAutoSave({
     isTreeLoading,
     activeTreeId,
     saveCurrentTree,
-    delay = 300,
+    delay = 2000, // 300ms → 2秒に変更
+    batchDelay = 5000, // バッチ処理用の追加遅延
+    enableBatching = true,
 }: AutoSaveProps) {
     const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const batchTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isInitialMountRef = useRef(true);
+    const changeCountRef = useRef(0);
+    const lastSaveTimeRef = useRef(Date.now());
 
     // 以前のデータを参照として保持
     const treeRef = useRef(tree);
@@ -35,6 +42,26 @@ export function useAutoSave({
     useEffect(() => {
         saveCurrentTreeRef.current = saveCurrentTree;
     }, [saveCurrentTree]);
+
+    // 実際の保存を実行する関数
+    const executeSave = useRef(() => {
+        const currentTime = Date.now();
+        console.log(`[AutoSave] Saving tree. Changes: ${changeCountRef.current}, Time since last save: ${currentTime - lastSaveTimeRef.current}ms`);
+        
+        saveCurrentTreeRef.current(treeRef.current, nodeTypesRef.current, treeTitleRef.current);
+        lastSaveTimeRef.current = currentTime;
+        changeCountRef.current = 0;
+        
+        // タイマーをクリア
+        if (saveTimerRef.current) {
+            clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = null;
+        }
+        if (batchTimerRef.current) {
+            clearTimeout(batchTimerRef.current);
+            batchTimerRef.current = null;
+        }
+    });
 
     // ツリーデータが変更されたときに自動保存を効率的に処理する
     useEffect(() => {
@@ -63,18 +90,48 @@ export function useAutoSave({
             treeRef.current = tree;
             nodeTypesRef.current = nodeTypes;
             treeTitleRef.current = treeTitle;
+            
+            // 変更回数をカウント
+            changeCountRef.current += 1;
 
-            // 既存のタイマーがあればクリアして新しいタイマーを設定
-            if (saveTimerRef.current) {
-                clearTimeout(saveTimerRef.current);
+            // バッチ処理が有効な場合の最適化ロジック
+            if (enableBatching) {
+                const timeSinceLastSave = Date.now() - lastSaveTimeRef.current;
+                const isFrequentChange = changeCountRef.current >= 3; // 3回以上の変更
+                const isLongTimeSinceLastSave = timeSinceLastSave > batchDelay;
+
+                // 既存のタイマーをクリア
+                if (saveTimerRef.current) {
+                    clearTimeout(saveTimerRef.current);
+                    saveTimerRef.current = null;
+                }
+
+                if (isFrequentChange || isLongTimeSinceLastSave) {
+                    // 頻繁な変更または長時間経過の場合は即座に保存
+                    executeSave.current();
+                } else {
+                    // 通常の場合は遅延保存
+                    saveTimerRef.current = setTimeout(() => {
+                        executeSave.current();
+                    }, delay);
+
+                    // バッチタイマーも設定（最大待機時間の保証）
+                    if (!batchTimerRef.current) {
+                        batchTimerRef.current = setTimeout(() => {
+                            executeSave.current();
+                        }, batchDelay);
+                    }
+                }
+            } else {
+                // バッチ処理無効の場合は従来のロジック
+                if (saveTimerRef.current) {
+                    clearTimeout(saveTimerRef.current);
+                }
+
+                saveTimerRef.current = setTimeout(() => {
+                    executeSave.current();
+                }, delay);
             }
-
-            // 保存処理は少し遅延させる（複数の状態変更が同時に起こる可能性がある場合）
-            saveTimerRef.current = setTimeout(() => {
-                // 保存する際にはrefから最新の関数を呼び出す
-                saveCurrentTreeRef.current(treeRef.current, nodeTypesRef.current, treeTitleRef.current);
-                saveTimerRef.current = null;
-            }, delay);
         }
 
         // クリーンアップ関数
@@ -82,6 +139,9 @@ export function useAutoSave({
             if (saveTimerRef.current) {
                 clearTimeout(saveTimerRef.current);
             }
+            if (batchTimerRef.current) {
+                clearTimeout(batchTimerRef.current);
+            }
         };
-    }, [tree, nodeTypes, treeTitle, activeTreeId, isTreeLoading, delay]);
+    }, [tree, nodeTypes, treeTitle, activeTreeId, isTreeLoading, delay, batchDelay, enableBatching]);
 }

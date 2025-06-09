@@ -5,33 +5,75 @@ import { eq, and } from 'drizzle-orm';
 import { trees, type NewTree } from '@/db/schema';
 import { getAuthUser } from '@/app/api/[[...hono]]/helpers/auth';
 import { initOidcAuthEnv } from '@/app/api/[[...hono]]/middleware/initOidcAuthEnv';
+import pako from 'pako';
 
 // Validation schemas
 const createTreeSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().optional(),
-  data: z.object({
-    nodes: z.array(z.any()),
-    expandedNodes: z.array(z.string()),
-  }),
-  nodeTypes: z.array(z.any()),
+  data: z.union([
+    z.object({
+      nodes: z.array(z.any()),
+      expandedNodes: z.array(z.string()),
+    }),
+    z.string(), // 圧縮された文字列データ
+  ]),
+  nodeTypes: z.union([
+    z.array(z.any()),
+    z.string(), // 圧縮された文字列データ
+  ]),
+  compressed: z.boolean().optional(),
 });
 
 const updateTreeSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
   data: z
-    .object({
-      nodes: z.array(z.any()),
-      expandedNodes: z.array(z.string()),
-    })
+    .union([
+      z.object({
+        nodes: z.array(z.any()),
+        expandedNodes: z.array(z.string()),
+      }),
+      z.string(), // 圧縮された文字列データ
+    ])
     .optional(),
-  nodeTypes: z.array(z.any()).optional(),
+  nodeTypes: z.union([
+    z.array(z.any()),
+    z.string(), // 圧縮された文字列データ
+  ]).optional(),
+  compressed: z.boolean().optional(),
 });
 
 // Helper function to generate R2 key
 const generateR2Key = (userId: string, treeId: string) => {
   return `trees/${userId}/${treeId}.json`;
+};
+
+// Helper function to decompress data
+const decompressData = (compressedData: string): any => {
+  try {
+    const compressed = new Uint8Array(
+      atob(compressedData).split('').map(c => c.charCodeAt(0))
+    );
+    const decompressed = pako.ungzip(compressed, { to: 'string' });
+    return JSON.parse(decompressed);
+  } catch (error) {
+    console.warn('Decompression failed, trying as uncompressed data:', error);
+    try {
+      return JSON.parse(compressedData);
+    } catch (parseError) {
+      console.error('Failed to parse data as JSON:', parseError);
+      throw new Error('Data decompression and parsing failed');
+    }
+  }
+};
+
+// Helper function to process potentially compressed data
+const processCompressedInput = (data: any, isCompressed: boolean = false) => {
+  if (!isCompressed || typeof data !== 'string') {
+    return data;
+  }
+  return decompressData(data);
 };
 
 // Type for tree data stored in R2
@@ -111,13 +153,17 @@ app.post('/', zValidator('json', createTreeSchema), async c => {
   const treeId = crypto.randomUUID();
   const r2Key = generateR2Key(user.id.toString(), treeId);
 
+  // Process potentially compressed data
+  const processedData = processCompressedInput(validated.data, validated.compressed);
+  const processedNodeTypes = processCompressedInput(validated.nodeTypes, validated.compressed);
+
   // Prepare tree data for R2
   const treeData: TreeDataJson = {
     data: {
-      nodes: validated.data.nodes,
-      expandedNodes: validated.data.expandedNodes,
+      nodes: processedData.nodes,
+      expandedNodes: processedData.expandedNodes,
     },
-    nodeTypes: validated.nodeTypes,
+    nodeTypes: processedNodeTypes,
   };
 
   // Save tree data to R2
@@ -181,15 +227,26 @@ app.put('/:id', zValidator('json', updateTreeSchema), async c => {
 
     const currentData: TreeDataJson = await object.json();
 
+    // Process potentially compressed data
+    let processedData = currentData.data;
+    let processedNodeTypes = currentData.nodeTypes;
+
+    if (validated.data) {
+      processedData = processCompressedInput(validated.data, validated.compressed);
+    }
+    if (validated.nodeTypes) {
+      processedNodeTypes = processCompressedInput(validated.nodeTypes, validated.compressed);
+    }
+
     // Merge updates
     const updatedData: TreeDataJson = {
       data: validated.data
         ? {
-            nodes: validated.data.nodes,
-            expandedNodes: validated.data.expandedNodes,
+            nodes: processedData.nodes,
+            expandedNodes: processedData.expandedNodes,
           }
         : currentData.data,
-      nodeTypes: validated.nodeTypes || currentData.nodeTypes,
+      nodeTypes: processedNodeTypes,
     };
 
     // Save updated data to R2
