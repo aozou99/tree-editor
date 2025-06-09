@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import {
     getSampleById,
-    organizationSample,
     type SampleType,
 } from '@/components/tree-editor/features/sample-selector/sample-data';
+import { NodeType } from '@/components/tree-editor/types';
 
 // コアコンポーネント
 import { TreeHeader } from '@/components/tree-editor/core/tree-header';
@@ -28,7 +28,7 @@ import SearchFeature from '@/components/tree-editor/features/search/search-featu
 import { useTreeDragDrop } from '@/components/tree-editor/hooks/use-tree-drag-drop';
 import { useTreeOperations } from '@/components/tree-editor/hooks/use-tree-operations';
 import { useTreeModals } from '@/components/tree-editor/hooks/use-tree-modals';
-import { useWorkspaceManager } from '@/components/tree-editor/hooks/use-workspace-manager';
+import { useTreeManager } from '@/components/tree-editor/hooks/use-tree-manager';
 import { useImportExport } from '@/components/tree-editor/hooks/use-import-export';
 import { useSearch } from '@/components/tree-editor/hooks/use-search';
 import { useAutoSave } from '@/components/tree-editor/hooks/use-auto-save';
@@ -37,12 +37,14 @@ import { useAutoSave } from '@/components/tree-editor/hooks/use-auto-save';
 import { TreeNode } from '@/components/tree-editor/types';
 import { useDocumentTitle } from '@uidotdev/usehooks';
 import type { SearchResult } from '@/components/tree-editor/types/search-types';
+import { useI18n } from '@/utils/i18n/i18n-context';
 
-// 初期ノードタイプデータと初期ツリーデータは、organizationSampleから取得
-const initialNodeTypes = organizationSample.nodeTypes;
-const initialTree = organizationSample.tree;
+// 初期ノードタイプデータと初期ツリーデータは空の配列
+const initialNodeTypes: NodeType[] = [];
+const initialTree: TreeNode[] = [];
 
 function TreeEditor() {
+    const { t } = useI18n();
     const [currentSampleId, setCurrentSampleId] = useState<SampleType>('organization');
 
     // ツリー操作のカスタムフック
@@ -68,7 +70,7 @@ function TreeEditor() {
     } = useTreeOperations({
         initialTree,
         initialNodeTypes,
-        initialTreeTitle: organizationSample.treeTitle,
+        initialTreeTitle: t('trees.defaultName'),
     });
 
     // モーダル管理のカスタムフック
@@ -96,27 +98,31 @@ function TreeEditor() {
         setImportError,
     } = useTreeModals();
 
-    // ワークスペース管理のカスタムフック
+    // ツリー管理のカスタムフック
     const {
-        activeWorkspaceId,
+        activeTreeId,
         lastSaved,
-        isWorkspaceLoading,
-        saveCurrentWorkspace,
-        handleWorkspaceChange,
-        handleCreateWorkspace,
-    } = useWorkspaceManager({
-        defaultTreeTitle: organizationSample.treeTitle,
+        isTreeLoading,
+        saveCurrentTree,
+        handleTreeChange,
+        handleCreateTree,
+        handleDeleteTree,
+        storageType,
+        handleStorageTypeChange,
+        isCloudAvailable,
+    } = useTreeManager({
+        defaultTreeTitle: t('trees.defaultName'),
         defaultTree: initialTree,
         defaultNodeTypes: initialNodeTypes,
-        onWorkspaceChange: (newTree, newNodeTypes, newTitle) => {
+        onTreeChange: (newTree, newNodeTypes, newTitle) => {
             setTree(newTree);
             setNodeTypes(newNodeTypes);
             setTreeTitle(newTitle);
         },
     });
 
-    // activeWorkspaceIdをundefinedに変換
-    const activeWorkspaceIdForAutoSave = activeWorkspaceId ?? undefined;
+    // activeTreeIdをundefinedに変換
+    const activeTreeIdForAutoSave = activeTreeId ?? undefined;
 
     // インポート/エクスポーネート機能のカスタムフック
     const { openFileSelector, executeImport, exportTreeData } = useImportExport({
@@ -137,9 +143,9 @@ function TreeEditor() {
         tree,
         nodeTypes,
         treeTitle,
-        isWorkspaceLoading,
-        activeWorkspaceId: activeWorkspaceIdForAutoSave,
-        saveCurrentWorkspace,
+        isTreeLoading,
+        activeTreeId: activeTreeIdForAutoSave,
+        saveCurrentTree,
     });
 
     // ドラッグ＆ドロップのカスタムフック
@@ -232,9 +238,13 @@ function TreeEditor() {
             <TreeHeader
                 treeTitle={treeTitle}
                 lastSaved={lastSaved}
-                activeWorkspaceId={activeWorkspaceId}
-                handleWorkspaceChange={handleWorkspaceChange}
-                handleCreateWorkspace={handleCreateWorkspace}
+                activeTreeId={activeTreeId}
+                handleTreeChange={handleTreeChange}
+                handleCreateTree={handleCreateTree}
+                handleDeleteTree={handleDeleteTree}
+                storageType={storageType}
+                onStorageTypeChange={handleStorageTypeChange}
+                isCloudAvailable={isCloudAvailable}
                 exportTreeData={() => exportTreeData(tree, nodeTypes, treeTitle)}
                 openFileSelector={openFileSelector}
                 setIsSampleSelectorOpen={setIsSampleSelectorOpen}

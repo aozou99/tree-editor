@@ -48,7 +48,7 @@ export function Header() {
           <LanguageSwitcher />
           <button
             onClick={toggleTheme}
-            className="h-9 w-9 flex items-center justify-center rounded-md text-sm transition-colors bg-background hover:bg-muted "
+            className="h-9 w-9 flex items-center justify-center rounded-md text-sm transition-colors bg-background hover:bg-muted"
             aria-label="Toggle dark mode"
             type="button"
           >

@@ -2,12 +2,12 @@
 
 import { useCallback } from 'react';
 import useSWR from 'swr';
-import { client } from '@/lib/api-client';
+import { apiClient } from '@/lib/api-client';
 import type { AuthResponse } from '@/types/auth';
 
 // fetcher関数を外部で定義して安定化
 const authFetcher = async (): Promise<AuthResponse> => {
-  const response = await client.api.auth.user.$get();
+  const response = await apiClient.api.auth.user.$get();
   if (!response.ok) {
     throw new Error('Failed to fetch user');
   }
@@ -41,7 +41,7 @@ export const useLogout = () => {
 
   const logout = useCallback(async () => {
     try {
-      const response = await client.api.auth.logout.$post();
+      const response = await apiClient.api.auth.logout.$post();
       if (response.ok) {
         // キャッシュをクリアしてユーザー情報を無効化
         await mutate({ user: null }, false);

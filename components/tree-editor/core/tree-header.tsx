@@ -9,15 +9,20 @@ import {
     DropdownMenuItem,
     DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
-import { WorkspaceManager } from '@/components/tree-editor/features/workspace-manager';
+import { TreeManager } from '@/components/tree-editor/features/tree-manager';
 import { useI18n } from '@/utils/i18n/i18n-context';
+import type { TreeWithData } from '@/lib/storage/types';
 
 interface TreeHeaderProps {
     treeTitle: string;
-    lastSaved: string | null;
-    activeWorkspaceId: string | null;
-    handleWorkspaceChange: (workspace: any) => void;
-    handleCreateWorkspace: (name: string) => void;
+    lastSaved: Date | null;
+    activeTreeId: string | null;
+    handleTreeChange: (tree: TreeWithData) => void;
+    handleCreateTree: (name: string) => Promise<TreeWithData | null>;
+    handleDeleteTree: (treeId: string) => Promise<void>;
+    storageType: 'local' | 'cloud';
+    onStorageTypeChange: (type: 'local' | 'cloud') => void;
+    isCloudAvailable: boolean;
     exportTreeData: () => void;
     openFileSelector: () => void;
     setIsSampleSelectorOpen: (isOpen: boolean) => void;
@@ -29,9 +34,13 @@ interface TreeHeaderProps {
 export function TreeHeader({
     treeTitle,
     lastSaved,
-    activeWorkspaceId,
-    handleWorkspaceChange,
-    handleCreateWorkspace,
+    activeTreeId,
+    handleTreeChange,
+    handleCreateTree,
+    handleDeleteTree,
+    storageType,
+    onStorageTypeChange,
+    isCloudAvailable,
     exportTreeData,
     openFileSelector,
     setIsSampleSelectorOpen,
@@ -46,18 +55,18 @@ export function TreeHeader({
             <div className='flex flex-wrap items-center justify-between gap-2 mb-2'>
                 <div className='flex items-center'>
                     <h2 className='text-xl font-semibold mr-2'>{treeTitle}</h2>
-                    {lastSaved && (
-                        <span className='text-xs text-muted-foreground whitespace-nowrap'>
-                            {t('common.lastSaved')}: {new Date(lastSaved).toLocaleTimeString()}
-                        </span>
-                    )}
                 </div>
 
                 <div className='flex items-center gap-2'>
-                    <WorkspaceManager
-                        activeWorkspaceId={activeWorkspaceId}
-                        onWorkspaceChange={handleWorkspaceChange}
-                        onCreateWorkspace={handleCreateWorkspace}
+                    <TreeManager
+                        activeTreeId={activeTreeId}
+                        onTreeChange={handleTreeChange}
+                        onCreateTree={handleCreateTree}
+                        onDeleteTree={handleDeleteTree}
+                        storageType={storageType}
+                        onStorageTypeChange={onStorageTypeChange}
+                        isCloudAvailable={isCloudAvailable}
+                        lastSaved={lastSaved}
                     />
 
                     <DropdownMenu>

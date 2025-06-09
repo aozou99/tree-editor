@@ -5,9 +5,9 @@ type AutoSaveProps = {
     tree: TreeNode[];
     nodeTypes: NodeType[];
     treeTitle: string;
-    isWorkspaceLoading: boolean;
-    activeWorkspaceId?: string;
-    saveCurrentWorkspace: (tree: TreeNode[], nodeTypes: NodeType[], treeTitle: string) => void;
+    isTreeLoading: boolean;
+    activeTreeId?: string;
+    saveCurrentTree: (tree: TreeNode[], nodeTypes: NodeType[], treeTitle: string) => void;
     delay?: number;
 };
 
@@ -15,9 +15,9 @@ export function useAutoSave({
     tree,
     nodeTypes,
     treeTitle,
-    isWorkspaceLoading,
-    activeWorkspaceId,
-    saveCurrentWorkspace,
+    isTreeLoading,
+    activeTreeId,
+    saveCurrentTree,
     delay = 300,
 }: AutoSaveProps) {
     const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -28,13 +28,13 @@ export function useAutoSave({
     const nodeTypesRef = useRef(nodeTypes);
     const treeTitleRef = useRef(treeTitle);
 
-    // 自動保存の依存関係の安定化のために、saveCurrentWorkspaceを参照として保持
-    const saveCurrentWorkspaceRef = useRef(saveCurrentWorkspace);
+    // 自動保存の依存関係の安定化のために、saveCurrentTreeを参照として保持
+    const saveCurrentTreeRef = useRef(saveCurrentTree);
 
-    // saveCurrentWorkspaceが変更されたらrefを更新
+    // saveCurrentTreeが変更されたらrefを更新
     useEffect(() => {
-        saveCurrentWorkspaceRef.current = saveCurrentWorkspace;
-    }, [saveCurrentWorkspace]);
+        saveCurrentTreeRef.current = saveCurrentTree;
+    }, [saveCurrentTree]);
 
     // ツリーデータが変更されたときに自動保存を効率的に処理する
     useEffect(() => {
@@ -47,8 +47,8 @@ export function useAutoSave({
             return;
         }
 
-        // ワークスペースがロード中または存在しない場合は何もしない
-        if (isWorkspaceLoading || !activeWorkspaceId) {
+        // ツリーがロード中または存在しない場合は何もしない
+        if (isTreeLoading || !activeTreeId) {
             return;
         }
 
@@ -72,7 +72,7 @@ export function useAutoSave({
             // 保存処理は少し遅延させる（複数の状態変更が同時に起こる可能性がある場合）
             saveTimerRef.current = setTimeout(() => {
                 // 保存する際にはrefから最新の関数を呼び出す
-                saveCurrentWorkspaceRef.current(treeRef.current, nodeTypesRef.current, treeTitleRef.current);
+                saveCurrentTreeRef.current(treeRef.current, nodeTypesRef.current, treeTitleRef.current);
                 saveTimerRef.current = null;
             }, delay);
         }
@@ -83,5 +83,5 @@ export function useAutoSave({
                 clearTimeout(saveTimerRef.current);
             }
         };
-    }, [tree, nodeTypes, treeTitle, activeWorkspaceId, isWorkspaceLoading, delay]);
+    }, [tree, nodeTypes, treeTitle, activeTreeId, isTreeLoading, delay]);
 }

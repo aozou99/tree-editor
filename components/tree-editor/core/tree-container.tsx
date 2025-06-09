@@ -83,33 +83,43 @@ export function TreeNodeContainer({
                     <p className='text-primary/70 text-sm font-medium'>{t('tree.dropHere')}</p>
                 </div>
             )}
-            {expandedTree.map((node) => (
-                <TreeNodeComponent
-                    key={node.id}
-                    node={node}
-                    nodeTypes={nodeTypes}
-                    highlightedPath={highlightedPath}
-                    focusMode={focusMode}
-                    editingNodeId={editingNodeId}
-                    editingName={editingName}
-                    draggedNodeId={draggedNodeId}
-                    dragOverNodeId={dragOverNodeId}
-                    dragPosition={dragPosition}
-                    onToggleExpand={onToggleExpand}
-                    onAddChild={onAddChild}
-                    onStartEditing={onStartEditing}
-                    onSaveNodeName={onSaveNodeName}
-                    onCancelEditing={onCancelEditing}
-                    onDeleteNode={onDeleteNode}
-                    onNodeClick={onNodeClick}
-                    onSetEditingName={onSetEditingName}
-                    onDragStart={onDragStart}
-                    onDragEnd={onDragEnd}
-                    onDragOver={onDragOver}
-                    onDragLeave={onDragLeave}
-                    onDrop={onDrop}
-                />
-            ))}
+            {expandedTree.length === 0 && !isDraggingOverRoot ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <div className="text-6xl mb-4">🌳</div>
+                    <p className="text-lg font-medium mb-2">{t('tree.empty.title')}</p>
+                    <p className="text-sm text-center max-w-md">
+                        {t('tree.empty.description')}
+                    </p>
+                </div>
+            ) : (
+                expandedTree.map((node) => (
+                    <TreeNodeComponent
+                        key={node.id}
+                        node={node}
+                        nodeTypes={nodeTypes}
+                        highlightedPath={highlightedPath}
+                        focusMode={focusMode}
+                        editingNodeId={editingNodeId}
+                        editingName={editingName}
+                        draggedNodeId={draggedNodeId}
+                        dragOverNodeId={dragOverNodeId}
+                        dragPosition={dragPosition}
+                        onToggleExpand={onToggleExpand}
+                        onAddChild={onAddChild}
+                        onStartEditing={onStartEditing}
+                        onSaveNodeName={onSaveNodeName}
+                        onCancelEditing={onCancelEditing}
+                        onDeleteNode={onDeleteNode}
+                        onNodeClick={onNodeClick}
+                        onSetEditingName={onSetEditingName}
+                        onDragStart={onDragStart}
+                        onDragEnd={onDragEnd}
+                        onDragOver={onDragOver}
+                        onDragLeave={onDragLeave}
+                        onDrop={onDrop}
+                    />
+                ))
+            )}
         </div>
     );
 }
