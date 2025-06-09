@@ -21,6 +21,7 @@ import {
 } from '@/components/tree-editor/features/dialogs/tree-dialogs';
 import { HistoryDialog } from '@/components/tree-editor/features/dialogs/history-dialog';
 import { SnapshotDialog } from '@/components/tree-editor/features/dialogs/snapshot-dialog';
+import { ImportExportGuideDialog } from '@/components/tree-editor/features/dialogs/import-export-guide-dialog';
 
 // 機能コンポーネント
 import SearchFeature from '@/components/tree-editor/features/search/search-feature';
@@ -100,6 +101,8 @@ function TreeEditor() {
         setImportData,
         importError,
         setImportError,
+        isImportExportGuideOpen,
+        setIsImportExportGuideOpen,
     } = useTreeModals();
 
     // ツリー管理のカスタムフック
@@ -268,6 +271,7 @@ function TreeEditor() {
                 setIsNodeTypeModalOpen={setIsNodeTypeModalOpen}
                 setIsHistoryDialogOpen={setIsHistoryDialogOpen}
                 setIsSnapshotDialogOpen={setIsSnapshotDialogOpen}
+                setIsImportExportGuideOpen={setIsImportExportGuideOpen}
                 addRootNode={openAddRootNodeModal}
             />
 
@@ -391,6 +395,11 @@ function TreeEditor() {
                 currentSampleId={currentSampleId}
                 setCurrentSampleId={setCurrentSampleId}
                 handleSelectSample={handleSelectSample}
+            />
+
+            <ImportExportGuideDialog
+                isOpen={isImportExportGuideOpen}
+                onClose={() => setIsImportExportGuideOpen(false)}
             />
         </div>
     );

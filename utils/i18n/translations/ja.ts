@@ -29,6 +29,7 @@ export const ja = {
         addRootNode: 'ルートノード追加',
         nodeTypeManagement: 'ノードタイプ管理',
         sampleSelection: 'サンプル選択',
+        importExportGuide: 'インポート/エクスポートガイド',
     },
     search: {
         placeholder: 'ノードを検索... (例: type:employee department:sales)',
@@ -234,6 +235,69 @@ export const ja = {
                 noNodeTypes: 'ノードタイプデータが見つかりません',
                 invalidNodeStructure: '無効なノード構造が含まれています',
                 invalidNodeTypeStructure: '無効なノードタイプ構造が含まれています',
+            },
+        },
+        importExportGuide: {
+            title: 'インポート/エクスポートガイド',
+            description: 'ツリーデータのインポート・エクスポート時のJSON構造とルールについて説明します。',
+            overview: {
+                title: '概要',
+                description: 'このアプリケーションは、ツリーデータのインポート・エクスポートにJSON形式を使用します。エクスポートされたファイルには、すべてのツリーノード、ノードタイプ、メタデータが含まれます。',
+            },
+            structure: {
+                title: 'JSON構造',
+                required: {
+                    title: '必須フィールド',
+                    tree: 'ツリーノードの配列（ルートレベルのノード）',
+                    nodeTypes: 'ノードタイプ定義の配列',
+                    treeTitle: 'ツリーの名前（文字列）',
+                    version: 'エクスポート形式のバージョン（文字列）',
+                    exportDate: 'エクスポート作成日時（ISO日付文字列）',
+                },
+            },
+            nodeStructure: {
+                title: 'ノード構造',
+                required: {
+                    title: '必須フィールド',
+                    id: '一意の識別子（文字列）',
+                    name: '表示名（文字列）',
+                    children: '子ノードの配列',
+                },
+                optional: {
+                    title: 'オプションフィールド',
+                    description: '説明テキスト',
+                    icon: 'アイコン絵文字または画像URL',
+                    nodeType: 'ノードタイプIDへの参照',
+                    customFields: 'カスタムフィールド値の配列',
+                },
+            },
+            nodeTypeStructure: {
+                title: 'ノードタイプ構造',
+                required: {
+                    title: '必須フィールド',
+                    id: '一意の識別子（文字列）',
+                    name: '表示名（文字列）',
+                    fieldDefinitions: 'フィールド定義の配列',
+                },
+            },
+            rules: {
+                title: '重要なルール',
+                jsonFormat: '有効なJSON形式である必要があります',
+                uniqueIds: 'すべてのIDはそのスコープ内で一意である必要があります',
+                nodeTypeReferences: 'ノードタイプ参照は既存のノードタイプを指している必要があります',
+                customFieldReferences: 'カスタムフィールド定義IDは既存の定義を指している必要があります',
+                validStructure: 'すべての必須フィールドが正しいデータ型で存在している必要があります',
+            },
+            example: {
+                title: 'JSON構造の例',
+                description: '以下は有効なエクスポートファイル構造の例です：',
+            },
+            tips: {
+                title: 'ヒント',
+                exportFirst: 'まず既存のツリーをエクスポートして正しい形式を確認してください',
+                validateJson: 'インポート前にJSONバリデーターでファイルをチェックしてください',
+                backupData: 'インポート前に必ず現在のデータをバックアップしてください',
+                idRegeneration: '競合を避けるため、インポート時にIDは自動的に再生成されます',
             },
         },
         nodeType: {

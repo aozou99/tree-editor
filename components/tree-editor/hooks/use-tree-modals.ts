@@ -27,6 +27,9 @@ export function useTreeModals() {
     const [importData, setImportData] = useState<string>('');
     const [importError, setImportError] = useState<string | null>(null);
 
+    // インポート/エクスポートガイドダイアログ
+    const [isImportExportGuideOpen, setIsImportExportGuideOpen] = useState<boolean>(false);
+
     // 子ノード追加モーダルを開く
     const openAddChildModal = useCallback((parentId: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -85,5 +88,9 @@ export function useTreeModals() {
         setImportData,
         importError,
         setImportError,
+
+        // インポート/エクスポートガイドダイアログ
+        isImportExportGuideOpen,
+        setIsImportExportGuideOpen,
     };
 }

@@ -29,6 +29,7 @@ export const en = {
     addRootNode: 'Add Root Node',
     nodeTypeManagement: 'Node Type Management',
     sampleSelection: 'Sample Selection',
+    importExportGuide: 'Import/Export Guide',
   },
   search: {
     placeholder: 'Search nodes... (e.g. type:employee department:sales)',
@@ -234,6 +235,69 @@ export const en = {
         noNodeTypes: 'Node type data not found',
         invalidNodeStructure: 'Invalid node structure included',
         invalidNodeTypeStructure: 'Invalid node type structure included',
+      },
+    },
+    importExportGuide: {
+      title: 'Import/Export Guide',
+      description: 'Learn about the JSON structure and rules for importing and exporting tree data.',
+      overview: {
+        title: 'Overview',
+        description: 'This application uses JSON format for importing and exporting tree data. The exported file contains all tree nodes, node types, and metadata.',
+      },
+      structure: {
+        title: 'JSON Structure',
+        required: {
+          title: 'Required Fields',
+          tree: 'Array of tree nodes (root level nodes)',
+          nodeTypes: 'Array of node type definitions',
+          treeTitle: 'String name of the tree',
+          version: 'String version of the export format',
+          exportDate: 'ISO date string of when the export was created',
+        },
+      },
+      nodeStructure: {
+        title: 'Node Structure',
+        required: {
+          title: 'Required Fields',
+          id: 'Unique identifier string',
+          name: 'Display name string',
+          children: 'Array of child nodes',
+        },
+        optional: {
+          title: 'Optional Fields',
+          description: 'Description text',
+          icon: 'Icon emoji or image URL',
+          nodeType: 'Reference to node type ID',
+          customFields: 'Array of custom field values',
+        },
+      },
+      nodeTypeStructure: {
+        title: 'Node Type Structure',
+        required: {
+          title: 'Required Fields',
+          id: 'Unique identifier string',
+          name: 'Display name string',
+          fieldDefinitions: 'Array of field definitions',
+        },
+      },
+      rules: {
+        title: 'Important Rules',
+        jsonFormat: 'Must be valid JSON format',
+        uniqueIds: 'All IDs must be unique within their scope',
+        nodeTypeReferences: 'Node type references must point to existing node types',
+        customFieldReferences: 'Custom field definition IDs must point to existing definitions',
+        validStructure: 'All required fields must be present with correct data types',
+      },
+      example: {
+        title: 'Example JSON Structure',
+        description: 'Below is an example of a valid export file structure:',
+      },
+      tips: {
+        title: 'Tips',
+        exportFirst: 'Export an existing tree first to see the correct format',
+        validateJson: 'Use a JSON validator to check your file before importing',
+        backupData: 'Always backup your current data before importing',
+        idRegeneration: 'IDs will be automatically regenerated during import to avoid conflicts',
       },
     },
     nodeType: {

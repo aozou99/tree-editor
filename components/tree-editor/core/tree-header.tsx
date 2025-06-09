@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Plus, Download, Upload, BookTemplate, Settings, File, Clock, GitCommit } from 'lucide-react';
+import { ChevronDown, Plus, Download, Upload, BookTemplate, Settings, File, Clock, GitCommit, Info } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -29,6 +29,7 @@ interface TreeHeaderProps {
     setIsNodeTypeModalOpen: (isOpen: boolean) => void;
     setIsHistoryDialogOpen: (isOpen: boolean) => void;
     setIsSnapshotDialogOpen: (isOpen: boolean) => void;
+    setIsImportExportGuideOpen: (isOpen: boolean) => void;
     addRootNode: () => void;
 }
 
@@ -48,6 +49,7 @@ export function TreeHeader({
     setIsNodeTypeModalOpen,
     setIsHistoryDialogOpen,
     setIsSnapshotDialogOpen,
+    setIsImportExportGuideOpen,
     addRootNode,
 }: TreeHeaderProps) {
     const { t } = useI18n();
@@ -92,6 +94,10 @@ export function TreeHeader({
                                 <DropdownMenuItem onClick={() => setIsSampleSelectorOpen(true)}>
                                     <BookTemplate size={16} className='mr-2' />
                                     <span>{t('header.sampleSelection')}</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsImportExportGuideOpen(true)}>
+                                    <Info size={16} className='mr-2' />
+                                    <span>{t('header.importExportGuide')}</span>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>
