@@ -17,9 +17,10 @@ import { NodeDetailModal } from '@/components/tree-editor/modals/node-detail-mod
 import { NodeTypeModal } from '@/components/tree-editor/modals/node-type-modal';
 import {
     ImportDialog,
-    ResetDialog,
     SampleSelectorDialog,
 } from '@/components/tree-editor/features/dialogs/tree-dialogs';
+import { HistoryDialog } from '@/components/tree-editor/features/dialogs/history-dialog';
+import { SnapshotDialog } from '@/components/tree-editor/features/dialogs/snapshot-dialog';
 
 // 機能コンポーネント
 import SearchFeature from '@/components/tree-editor/features/search/search-feature';
@@ -32,6 +33,7 @@ import { useTreeManager } from '@/components/tree-editor/hooks/use-tree-manager'
 import { useImportExport } from '@/components/tree-editor/hooks/use-import-export';
 import { useSearch } from '@/components/tree-editor/hooks/use-search';
 import { useAutoSave } from '@/components/tree-editor/hooks/use-auto-save';
+import { useTreeSnapshots } from '@/components/tree-editor/hooks/use-tree-snapshots';
 
 // 型定義
 import { TreeNode } from '@/components/tree-editor/types';
@@ -88,8 +90,10 @@ function TreeEditor() {
         openNodeDetailModal,
         isSampleSelectorOpen,
         setIsSampleSelectorOpen,
-        isResetDialogOpen,
-        setIsResetDialogOpen,
+        isHistoryDialogOpen,
+        setIsHistoryDialogOpen,
+        isSnapshotDialogOpen,
+        setIsSnapshotDialogOpen,
         isImportDialogOpen,
         setIsImportDialogOpen,
         importData,
@@ -146,6 +150,19 @@ function TreeEditor() {
         isTreeLoading,
         activeTreeId: activeTreeIdForAutoSave,
         saveCurrentTree,
+    });
+
+    // スナップショット管理のカスタムフック
+    const {
+        snapshots,
+        createAutoSnapshot,
+        createManualSnapshot,
+        restoreFromSnapshot,
+    } = useTreeSnapshots({
+        tree,
+        nodeTypes,
+        treeTitle,
+        activeTreeId,
     });
 
     // ドラッグ＆ドロップのカスタムフック
@@ -249,7 +266,8 @@ function TreeEditor() {
                 openFileSelector={openFileSelector}
                 setIsSampleSelectorOpen={setIsSampleSelectorOpen}
                 setIsNodeTypeModalOpen={setIsNodeTypeModalOpen}
-                setIsResetDialogOpen={setIsResetDialogOpen}
+                setIsHistoryDialogOpen={setIsHistoryDialogOpen}
+                setIsSnapshotDialogOpen={setIsSnapshotDialogOpen}
                 addRootNode={openAddRootNodeModal}
             />
 
@@ -346,11 +364,25 @@ function TreeEditor() {
                 executeImport={executeImport}
             />
 
-            <ResetDialog
-                open={isResetDialogOpen}
-                onOpenChange={setIsResetDialogOpen}
-                currentSampleId={currentSampleId}
-                resetTree={resetTree}
+            <HistoryDialog
+                open={isHistoryDialogOpen}
+                onOpenChange={setIsHistoryDialogOpen}
+                snapshots={snapshots}
+                onRestore={(snapshot) => {
+                    const restored = restoreFromSnapshot(snapshot);
+                    setTree(restored.tree);
+                    setNodeTypes(restored.nodeTypes);
+                    setTreeTitle(restored.treeTitle);
+                }}
+                currentTreeId={activeTreeId}
+            />
+
+            <SnapshotDialog
+                open={isSnapshotDialogOpen}
+                onOpenChange={setIsSnapshotDialogOpen}
+                onCreateSnapshot={(title, description) => {
+                    createManualSnapshot(title, description);
+                }}
             />
 
             <SampleSelectorDialog

@@ -16,8 +16,11 @@ export function useTreeModals() {
     // サンプル選択モーダル
     const [isSampleSelectorOpen, setIsSampleSelectorOpen] = useState<boolean>(false);
 
-    // リセット確認ダイアログ
-    const [isResetDialogOpen, setIsResetDialogOpen] = useState<boolean>(false);
+    // 履歴から復元ダイアログ
+    const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState<boolean>(false);
+
+    // スナップショット作成ダイアログ
+    const [isSnapshotDialogOpen, setIsSnapshotDialogOpen] = useState<boolean>(false);
 
     // インポートダイアログ
     const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
@@ -67,9 +70,13 @@ export function useTreeModals() {
         isSampleSelectorOpen,
         setIsSampleSelectorOpen,
 
-        // リセット確認ダイアログ
-        isResetDialogOpen,
-        setIsResetDialogOpen,
+        // 履歴から復元ダイアログ
+        isHistoryDialogOpen,
+        setIsHistoryDialogOpen,
+
+        // スナップショット作成ダイアログ
+        isSnapshotDialogOpen,
+        setIsSnapshotDialogOpen,
 
         // インポートダイアログ
         isImportDialogOpen,

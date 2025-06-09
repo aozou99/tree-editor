@@ -81,44 +81,8 @@ export function ImportDialog({
     );
 }
 
-type ResetDialogProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    currentSampleId: SampleType;
-    resetTree: (tree: TreeNode[], nodeTypes: NodeType[], title: string) => void;
-};
-
-export function ResetDialog({ open, onOpenChange, currentSampleId, resetTree }: ResetDialogProps) {
-    const { t } = useI18n();
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className='sm:max-w-md'>
-                <DialogHeader>
-                    <DialogTitle>{t('dialogs.reset.title')}</DialogTitle>
-                    <DialogDescription>{t('dialogs.reset.description')}</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button variant='outline' onClick={() => onOpenChange(false)}>
-                        {t('common.cancel')}
-                    </Button>
-                    <Button
-                        variant='destructive'
-                        onClick={() => {
-                            const sample = getSampleById(currentSampleId);
-                            if (sample) {
-                                resetTree(sample.tree, sample.nodeTypes, sample.treeTitle);
-                                onOpenChange(false);
-                            }
-                        }}
-                    >
-                        {t('common.reset')}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
+// Deprecated - use HistoryDialog instead
+// export function ResetDialog({ open, onOpenChange, currentSampleId, resetTree }: ResetDialogProps) { ... }
 
 type SampleSelectorDialogProps = {
     open: boolean;

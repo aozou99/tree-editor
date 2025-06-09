@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Plus, RotateCcw, Download, Upload, BookTemplate, Settings, File } from 'lucide-react';
+import { ChevronDown, Plus, Download, Upload, BookTemplate, Settings, File, Clock, GitCommit } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -27,7 +27,8 @@ interface TreeHeaderProps {
     openFileSelector: () => void;
     setIsSampleSelectorOpen: (isOpen: boolean) => void;
     setIsNodeTypeModalOpen: (isOpen: boolean) => void;
-    setIsResetDialogOpen: (isOpen: boolean) => void;
+    setIsHistoryDialogOpen: (isOpen: boolean) => void;
+    setIsSnapshotDialogOpen: (isOpen: boolean) => void;
     addRootNode: () => void;
 }
 
@@ -45,7 +46,8 @@ export function TreeHeader({
     openFileSelector,
     setIsSampleSelectorOpen,
     setIsNodeTypeModalOpen,
-    setIsResetDialogOpen,
+    setIsHistoryDialogOpen,
+    setIsSnapshotDialogOpen,
     addRootNode,
 }: TreeHeaderProps) {
     const { t } = useI18n();
@@ -109,9 +111,13 @@ export function TreeHeader({
                                     <Settings size={16} className='mr-2' />
                                     <span>{t('header.nodeTypeManagement')}</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsResetDialogOpen(true)}>
-                                    <RotateCcw size={16} className='mr-2' />
-                                    <span>{t('common.reset')}</span>
+                                <DropdownMenuItem onClick={() => setIsSnapshotDialogOpen(true)}>
+                                    <GitCommit size={16} className='mr-2' />
+                                    <span>{t('dialogs.snapshot.title')}</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsHistoryDialogOpen(true)}>
+                                    <Clock size={16} className='mr-2' />
+                                    <span>{t('dialogs.history.title')}</span>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>
