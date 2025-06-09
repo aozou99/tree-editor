@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlusCircle, Edit, Save, Trash } from 'lucide-react';
-import { UrlInputDialog } from './url-input-dialog';
 import { NodeType, CustomFieldDefinition } from '@/components/tree-editor/types';
 import { isBase64Image } from '@/components/tree-editor/utils/image-utils';
 import { useI18n } from '@/utils/i18n/i18n-context';
@@ -42,8 +41,6 @@ interface NodeTypeModalProps {
 export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }: NodeTypeModalProps) {
     const [editMode, setEditMode] = useState<'view' | 'edit' | 'new'>('view');
     const [editingNodeType, setEditingNodeType] = useState<NodeType | null>(null);
-    const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const { t } = useI18n();
 
     // 新しいノードタイプの作成を開始
@@ -178,62 +175,6 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
     const handleCancelEdit = () => {
         setEditMode('view');
         setEditingNodeType(null);
-    };
-
-    // アイコンの更新（絵文字）
-
-    // アイコンの更新（URL）
-    const handleUpdateIconUrl = (url: string) => {
-        if (editingNodeType) {
-            setEditingNodeType({
-                ...editingNodeType,
-                icon: url,
-            });
-        }
-    };
-
-    // 画像ファイルをBase64に変換
-    const convertFileToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(file);
-        });
-    };
-
-    // ファイル選択時の処理
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !editingNodeType) return;
-
-        try {
-            // ファイルサイズチェック (2MB以下)
-            if (file.size > 2 * 1024 * 1024) {
-                alert(t('dialogs.nodeType.errors.fileSizeLimit'));
-                return;
-            }
-
-            // 画像ファイルかチェック
-            if (!file.type.startsWith('image/')) {
-                alert(t('dialogs.nodeType.errors.imageFileOnly'));
-                return;
-            }
-
-            const base64 = await convertFileToBase64(file);
-            setEditingNodeType({
-                ...editingNodeType,
-                icon: base64,
-            });
-        } catch (error) {
-            console.error(t('debug.fileReadError'), error);
-            alert(t('dialogs.nodeType.errors.fileReadError'));
-        }
-
-        // ファイル選択をリセット
-        if (e.target) {
-            e.target.value = '';
-        }
     };
 
     // アイコンが画像URLかどうかを判定
@@ -381,14 +322,6 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
                                         }
                                     }}
                                     allowUpload={true}
-                                />
-                                {/* 非表示のファイルインプット */}
-                                <input
-                                    type='file'
-                                    ref={fileInputRef}
-                                    className='hidden'
-                                    accept='image/*'
-                                    onChange={handleFileChange}
                                 />
                             </div>
 
@@ -539,13 +472,6 @@ export function NodeTypeModal({ open, onOpenChange, nodeTypes, onSaveNodeTypes }
                 </DialogFooter>
             </DialogContent>
 
-            {/* URL入力ダイアログ */}
-            <UrlInputDialog
-                open={isUrlDialogOpen}
-                onOpenChange={setIsUrlDialogOpen}
-                onUrlSubmit={handleUpdateIconUrl}
-                currentUrl={isIconUrl(editingNodeType?.icon) ? editingNodeType?.icon : ''}
-            />
         </Dialog>
     );
 }
