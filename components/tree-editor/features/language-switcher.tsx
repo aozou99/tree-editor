@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useI18n, type Locale } from '@/utils/i18n/i18n-context';
-import { Globe } from 'lucide-react';
+import { Check } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,26 +13,36 @@ import {
 export function LanguageSwitcher() {
   const { locale, changeLocale } = useI18n();
 
-  const languages: { value: Locale; label: string }[] = [
-    { value: 'ja', label: '日本語' },
-    { value: 'en', label: 'English' },
+  const languages: { value: Locale; label: string; flag: string }[] = [
+    { value: 'ja', label: '日本語', flag: '🇯🇵' },
+    { value: 'en', label: 'English', flag: '🇺🇸' },
   ];
+
+  // 現在の言語の国旗を取得
+  const currentLanguage = languages.find(lang => lang.value === locale);
+  const currentFlag = currentLanguage?.flag || '🌐';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
-          <Globe size={16} />
+        <Button variant="ghost" size="sm" className="h-9 px-2 flex items-center gap-1">
+          <span className="text-base">{currentFlag}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-40">
         {languages.map(lang => (
           <DropdownMenuItem
             key={lang.value}
             onClick={() => changeLocale(lang.value)}
-            className={locale === lang.value ? 'bg-muted' : ''}
+            className={`flex items-center justify-between ${
+              locale === lang.value ? 'bg-muted' : ''
+            }`}
           >
-            {lang.label}
+            <div className="flex items-center gap-2">
+              <span className="text-base">{lang.flag}</span>
+              <span>{lang.label}</span>
+            </div>
+            {locale === lang.value && <Check size={16} className="text-primary" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

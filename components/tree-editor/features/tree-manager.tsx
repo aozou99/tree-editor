@@ -262,7 +262,7 @@ export function TreeManager({
               <ChevronDownIcon size={14} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-64">
+          <DropdownMenuContent align="start" className="w-80">
             {/* Storage Type Switcher */}
             {isCloudAvailable && (
               <>
@@ -306,9 +306,11 @@ export function TreeManager({
                     }}
                   >
                     <div className="flex items-center space-x-2 flex-1">
-                      {tree.id === activeTreeId && (
-                        <CheckIcon size={14} className="text-green-500" />
-                      )}
+                      <div className="w-[14px] h-[14px] flex items-center justify-center">
+                        {tree.id === activeTreeId && (
+                          <CheckIcon size={14} className="text-green-500" />
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className={tree.id === activeTreeId ? 'font-medium' : ''}>
                           {tree.name}
