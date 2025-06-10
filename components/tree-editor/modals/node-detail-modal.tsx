@@ -26,6 +26,7 @@ interface NodeDetailModalProps {
     onOpenChange: (open: boolean) => void;
     onUpdateNode: (node: TreeNode) => void;
     nodeTypes: NodeType[];
+    isViewerMode?: boolean;
 }
 
 // FieldEditor用のインターフェース作成
@@ -142,7 +143,7 @@ function FieldDisplayWrapper({
     );
 }
 
-export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTypes }: NodeDetailModalProps) {
+export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTypes, isViewerMode = false }: NodeDetailModalProps) {
     // nodeが存在しない場合は何も表示しない
     const [isEditing, setIsEditing] = useState(false);
     const [editedNode, setEditedNode] = useState<TreeNode>({ ...node });
@@ -585,19 +586,21 @@ export function NodeDetailModal({ node, open, onOpenChange, onUpdateNode, nodeTy
                 </ScrollArea>
 
                 <DialogFooter className='sm:justify-between'>
-                    <Button type='button' variant={isEditing ? 'default' : 'outline'} onClick={toggleEditMode}>
-                        {isEditing ? (
-                            <>
-                                <Save size={16} className='mr-2' />
-                                {t('dialogs.node.detail.saveButton')}
-                            </>
-                        ) : (
-                            <>
-                                <Edit size={16} className='mr-2' />
-                                {t('dialogs.node.detail.editButton')}
-                            </>
-                        )}
-                    </Button>
+                    {!isViewerMode && (
+                        <Button type='button' variant={isEditing ? 'default' : 'outline'} onClick={toggleEditMode}>
+                            {isEditing ? (
+                                <>
+                                    <Save size={16} className='mr-2' />
+                                    {t('dialogs.node.detail.saveButton')}
+                                </>
+                            ) : (
+                                <>
+                                    <Edit size={16} className='mr-2' />
+                                    {t('dialogs.node.detail.editButton')}
+                                </>
+                            )}
+                        </Button>
+                    )}
                     <Button type='button' variant='ghost' onClick={() => handleOpenChange(false)}>
                         {t('dialogs.node.detail.closeButton')}
                     </Button>

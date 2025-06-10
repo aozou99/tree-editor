@@ -5,6 +5,7 @@ import { DrizzleD1Database } from 'drizzle-orm/d1';
 import * as schema from '@/db/schema';
 import authRouter from './handlers/auth';
 import treesRouter from './handlers/trees';
+import sharesRouter from './handlers/shares';
 import { initContext } from '@/app/api/[[...hono]]/middleware/initContext';
 
 declare module 'hono' {
@@ -18,7 +19,7 @@ const app = new Hono().basePath('/api');
 app.use(logger());
 app.use(initContext);
 
-const routes = app.route('/auth', authRouter).route('/trees', treesRouter);
+const routes = app.route('/auth', authRouter).route('/trees', treesRouter).route('/shares', sharesRouter);
 
 export type AppType = typeof routes;
 

@@ -33,6 +33,7 @@ type TreeNodeContainerProps = {
     onDragOver: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
     onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
     onDrop: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
+    isViewerMode?: boolean;
 };
 
 export function TreeNodeContainer({
@@ -64,6 +65,7 @@ export function TreeNodeContainer({
     onDragOver,
     onDragLeave,
     onDrop,
+    isViewerMode = false,
 }: TreeNodeContainerProps) {
     const { t } = useI18n();
 
@@ -117,6 +119,7 @@ export function TreeNodeContainer({
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
                         onDrop={onDrop}
+                        isViewerMode={isViewerMode}
                     />
                 ))
             )}

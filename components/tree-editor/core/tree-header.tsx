@@ -30,6 +30,7 @@ interface TreeHeaderProps {
     setIsHistoryDialogOpen: (isOpen: boolean) => void;
     setIsSnapshotDialogOpen: (isOpen: boolean) => void;
     setIsImportExportGuideOpen: (isOpen: boolean) => void;
+    setIsShareDialogOpen: (isOpen: boolean) => void;
     addRootNode: () => void;
 }
 
@@ -50,6 +51,7 @@ export function TreeHeader({
     setIsHistoryDialogOpen,
     setIsSnapshotDialogOpen,
     setIsImportExportGuideOpen,
+    setIsShareDialogOpen,
     addRootNode,
 }: TreeHeaderProps) {
     const { t } = useI18n();
@@ -71,6 +73,7 @@ export function TreeHeader({
                         onStorageTypeChange={onStorageTypeChange}
                         isCloudAvailable={isCloudAvailable}
                         lastSaved={lastSaved}
+                        onShareTree={(treeId, treeName) => setIsShareDialogOpen(true)}
                     />
 
                     <DropdownMenu>

@@ -30,6 +30,9 @@ export function useTreeModals() {
     // インポート/エクスポートガイドダイアログ
     const [isImportExportGuideOpen, setIsImportExportGuideOpen] = useState<boolean>(false);
 
+    // 共有ダイアログ
+    const [isShareDialogOpen, setIsShareDialogOpen] = useState<boolean>(false);
+
     // 子ノード追加モーダルを開く
     const openAddChildModal = useCallback((parentId: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -92,5 +95,9 @@ export function useTreeModals() {
         // インポート/エクスポートガイドダイアログ
         isImportExportGuideOpen,
         setIsImportExportGuideOpen,
+
+        // 共有ダイアログ
+        isShareDialogOpen,
+        setIsShareDialogOpen,
     };
 }

@@ -33,6 +33,7 @@ interface TreeNodeComponentProps {
     onDragOver: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
     onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
     onDrop: (e: React.DragEvent<HTMLDivElement>, nodeId: string) => void;
+    isViewerMode?: boolean;
 }
 
 export function TreeNodeComponent({
@@ -59,6 +60,7 @@ export function TreeNodeComponent({
     onDragOver,
     onDragLeave,
     onDrop,
+    isViewerMode = false,
 }: TreeNodeComponentProps) {
     // ノードの状態を判断するヘルパー変数
     const hasChildren = node.children.length > 0;
@@ -102,12 +104,12 @@ export function TreeNodeComponent({
                 draggedNodeId === node.id && 'opacity-50',
                 dragOverNodeId === node.id && dragPosition === 'inside' && 'bg-primary/10 rounded-md',
             )}
-            draggable
-            onDragStart={(e) => onDragStart(e, node.id)}
-            onDragEnd={onDragEnd}
-            onDragOver={(e) => onDragOver(e, node.id)}
-            onDragLeave={onDragLeave}
-            onDrop={(e) => onDrop(e, node.id)}
+            draggable={!isViewerMode}
+            onDragStart={!isViewerMode ? (e) => onDragStart(e, node.id) : undefined}
+            onDragEnd={!isViewerMode ? onDragEnd : undefined}
+            onDragOver={!isViewerMode ? (e) => onDragOver(e, node.id) : undefined}
+            onDragLeave={!isViewerMode ? onDragLeave : undefined}
+            onDrop={!isViewerMode ? (e) => onDrop(e, node.id) : undefined}
         >
             {dragOverNodeId === node.id && dragPosition === 'before' && (
                 <div className='h-1 bg-primary rounded-full -mt-0.5 mb-1' />
@@ -196,32 +198,34 @@ export function TreeNodeComponent({
                                 <Info size={14} className='ml-2 text-muted-foreground' />
                             )}
                         </div>
-                        <div className='opacity-0 group-hover:opacity-100 flex' onClick={(e) => e.stopPropagation()}>
-                            <Button
-                                size='icon'
-                                variant='ghost'
-                                onClick={(e: React.MouseEvent<HTMLButtonElement>) => onAddChild(node.id, e)}
-                                className='h-7 w-7'
-                            >
-                                <Plus size={16} />
-                            </Button>
-                            <Button
-                                size='icon'
-                                variant='ghost'
-                                onClick={(e: React.MouseEvent<HTMLButtonElement>) => onStartEditing(node, e)}
-                                className='h-7 w-7'
-                            >
-                                <Edit size={16} />
-                            </Button>
-                            <Button
-                                size='icon'
-                                variant='ghost'
-                                onClick={(e: React.MouseEvent<HTMLButtonElement>) => onDeleteNode(node.id, e)}
-                                className='h-7 w-7'
-                            >
-                                <Trash size={16} />
-                            </Button>
-                        </div>
+                        {!isViewerMode && (
+                            <div className='opacity-0 group-hover:opacity-100 flex' onClick={(e) => e.stopPropagation()}>
+                                <Button
+                                    size='icon'
+                                    variant='ghost'
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => onAddChild(node.id, e)}
+                                    className='h-7 w-7'
+                                >
+                                    <Plus size={16} />
+                                </Button>
+                                <Button
+                                    size='icon'
+                                    variant='ghost'
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => onStartEditing(node, e)}
+                                    className='h-7 w-7'
+                                >
+                                    <Edit size={16} />
+                                </Button>
+                                <Button
+                                    size='icon'
+                                    variant='ghost'
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => onDeleteNode(node.id, e)}
+                                    className='h-7 w-7'
+                                >
+                                    <Trash size={16} />
+                                </Button>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
@@ -269,6 +273,7 @@ export function TreeNodeComponent({
                                     onDragOver={onDragOver}
                                     onDragLeave={onDragLeave}
                                     onDrop={onDrop}
+                                    isViewerMode={isViewerMode}
                                 />
                             );
                         })

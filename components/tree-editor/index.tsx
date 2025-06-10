@@ -22,6 +22,7 @@ import {
 import { HistoryDialog } from '@/components/tree-editor/features/dialogs/history-dialog';
 import { SnapshotDialog } from '@/components/tree-editor/features/dialogs/snapshot-dialog';
 import { ImportExportGuideDialog } from '@/components/tree-editor/features/dialogs/import-export-guide-dialog';
+import { ShareDialog } from '@/components/tree-editor/features/dialogs/share-dialog';
 import { CompressionDebug } from '@/components/tree-editor/features/compression-debug';
 
 // 機能コンポーネント
@@ -103,6 +104,8 @@ function TreeEditor() {
         setImportError,
         isImportExportGuideOpen,
         setIsImportExportGuideOpen,
+        isShareDialogOpen,
+        setIsShareDialogOpen,
     } = useTreeModals();
 
     // ツリー管理のカスタムフック
@@ -275,6 +278,7 @@ function TreeEditor() {
                 setIsHistoryDialogOpen={setIsHistoryDialogOpen}
                 setIsSnapshotDialogOpen={setIsSnapshotDialogOpen}
                 setIsImportExportGuideOpen={setIsImportExportGuideOpen}
+                setIsShareDialogOpen={setIsShareDialogOpen}
                 addRootNode={openAddRootNodeModal}
             />
 
@@ -403,6 +407,13 @@ function TreeEditor() {
             <ImportExportGuideDialog
                 isOpen={isImportExportGuideOpen}
                 onClose={() => setIsImportExportGuideOpen(false)}
+            />
+
+            <ShareDialog
+                isOpen={isShareDialogOpen}
+                onClose={() => setIsShareDialogOpen(false)}
+                treeId={activeTreeId}
+                treeName={treeTitle}
             />
 
             {/* 開発環境での圧縮統計デバッグ */}

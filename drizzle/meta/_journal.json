@@ -8,6 +8,13 @@
       "when": 1748180485481,
       "tag": "0000_faithful_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1749558855367,
+      "tag": "0001_foamy_norrin_radd",
+      "breakpoints": true
     }
   ]
 }

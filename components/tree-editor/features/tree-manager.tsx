@@ -31,6 +31,7 @@ import {
   HardDriveIcon,
   WifiOffIcon,
   RefreshCwIcon,
+  ShareIcon,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useI18n } from '@/utils/i18n/i18n-context';
@@ -46,6 +47,7 @@ interface TreeManagerProps {
   onStorageTypeChange: (type: 'local' | 'cloud') => void;
   isCloudAvailable: boolean;
   lastSaved?: Date | null;
+  onShareTree?: (treeId: string, treeName: string) => void;
 }
 
 export function TreeManager({
@@ -57,6 +59,7 @@ export function TreeManager({
   onStorageTypeChange,
   isCloudAvailable,
   lastSaved,
+  onShareTree,
 }: TreeManagerProps) {
   const [trees, setTrees] = useState<TreeInfo[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -316,6 +319,28 @@ export function TreeManager({
                       </div>
                     </div>
                     <div className="flex items-center space-x-1">
+                      {/* Share button - only show for cloud storage */}
+                      {storageType === 'cloud' && onShareTree && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={(e: React.MouseEvent) => {
+                                  e.stopPropagation();
+                                  onShareTree(tree.id, tree.name);
+                                }}
+                              >
+                                <ShareIcon size={12} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="left">共有</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
