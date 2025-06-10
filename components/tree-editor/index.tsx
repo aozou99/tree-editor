@@ -70,7 +70,6 @@ function TreeEditor() {
         cancelEditing,
         updateNodeDetails,
         updateNodeTypes,
-        resetTree,
     } = useTreeOperations({
         initialTree,
         initialNodeTypes,
@@ -159,7 +158,6 @@ function TreeEditor() {
     // スナップショット管理のカスタムフック
     const {
         snapshots,
-        createAutoSnapshot,
         createManualSnapshot,
         restoreFromSnapshot,
     } = useTreeSnapshots({
@@ -222,11 +220,15 @@ function TreeEditor() {
     };
 
     // サンプルを変更する関数
-    const handleSelectSample = (sampleId: SampleType) => {
+    const handleSelectSample = async (sampleId: SampleType) => {
         const sample = getSampleById(sampleId);
         if (!sample) return;
 
-        resetTree(sample.tree, sample.nodeTypes, sample.treeTitle);
+        // 新しいツリーとして作成
+        await handleCreateTree(sample.treeTitle, {
+            nodes: sample.tree,
+            nodeTypes: sample.nodeTypes,
+        });
         setCurrentSampleId(sampleId);
     };
 

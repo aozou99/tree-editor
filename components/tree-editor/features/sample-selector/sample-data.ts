@@ -1,7 +1,7 @@
 import { TreeNode, NodeType } from '@/components/tree-editor/types';
 
 // サンプルの種類を定義
-export type SampleType = 'organization' | 'rockbands' | 'tokugawa' | 'company';
+export type SampleType = 'organization' | 'rockbands' | 'tokugawa' | 'company' | 'knowledge' | 'recipe';
 
 // サンプルデータのインターフェース
 export interface SampleData {
@@ -978,8 +978,649 @@ export const companySample: SampleData = {
     ],
 };
 
+// ナレッジベースサンプル（深い階層と多様なメディアを含む）
+export const knowledgeSample: SampleData = {
+    id: 'knowledge',
+    name: 'ナレッジベース',
+    description: '学習コンテンツや社内wiki風の多様なメディアを含むサンプル',
+    treeTitle: '技術ナレッジベース',
+    nodeTypes: [
+        {
+            id: 'type-category',
+            name: 'カテゴリー',
+            icon: '📚',
+            fieldDefinitions: [
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-tags', name: 'タグ', type: 'text', required: false },
+            ],
+        },
+        {
+            id: 'type-article',
+            name: '記事',
+            icon: '📝',
+            fieldDefinitions: [
+                { id: 'field-summary', name: '概要', type: 'textarea', required: true },
+                { id: 'field-content', name: '本文', type: 'textarea', required: false },
+                { id: 'field-author', name: '著者', type: 'text', required: true },
+                { id: 'field-updated', name: '更新日', type: 'text', required: false },
+                { id: 'field-link', name: '参考リンク', type: 'link', required: false },
+            ],
+        },
+        {
+            id: 'type-video-tutorial',
+            name: 'ビデオチュートリアル',
+            icon: '🎬',
+            fieldDefinitions: [
+                { id: 'field-title', name: 'タイトル', type: 'text', required: true },
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-youtube', name: 'YouTube動画', type: 'youtube', required: true },
+                { id: 'field-duration', name: '再生時間', type: 'text', required: false },
+                { id: 'field-difficulty', name: '難易度', type: 'text', required: false },
+            ],
+        },
+        {
+            id: 'type-podcast',
+            name: 'ポッドキャスト',
+            icon: '🎙️',
+            fieldDefinitions: [
+                { id: 'field-title', name: 'タイトル', type: 'text', required: true },
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-audio', name: '音声ファイル', type: 'audio', required: true },
+                { id: 'field-transcript', name: '文字起こし', type: 'textarea', required: false },
+                { id: 'field-guest', name: 'ゲスト', type: 'text', required: false },
+            ],
+        },
+        {
+            id: 'type-diagram',
+            name: '図解・インフォグラフィック',
+            icon: '📊',
+            fieldDefinitions: [
+                { id: 'field-title', name: 'タイトル', type: 'text', required: true },
+                { id: 'field-image', name: '画像', type: 'image', required: true },
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-source', name: 'データソース', type: 'text', required: false },
+            ],
+        },
+        {
+            id: 'type-code-snippet',
+            name: 'コードスニペット',
+            icon: '💻',
+            fieldDefinitions: [
+                { id: 'field-title', name: 'タイトル', type: 'text', required: true },
+                { id: 'field-language', name: '言語', type: 'text', required: true },
+                { id: 'field-code', name: 'コード', type: 'textarea', required: true },
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-tags', name: 'タグ', type: 'text', required: false },
+            ],
+        },
+        {
+            id: 'type-book-reference',
+            name: '書籍リファレンス',
+            icon: '📖',
+            fieldDefinitions: [
+                { id: 'field-title', name: '書名', type: 'text', required: true },
+                { id: 'field-author', name: '著者', type: 'text', required: true },
+                { id: 'field-isbn', name: 'ISBN', type: 'text', required: false },
+                { id: 'field-cover', name: '表紙画像', type: 'image', required: false },
+                { id: 'field-review', name: 'レビュー', type: 'textarea', required: false },
+                { id: 'field-link', name: '購入リンク', type: 'link', required: false },
+            ],
+        },
+    ],
+    tree: [
+        {
+            id: 'kb1',
+            name: '技術ナレッジベース',
+            isExpanded: true,
+            icon: '🏠',
+            children: [
+                {
+                    id: 'kb2',
+                    name: 'フロントエンド開発',
+                    isExpanded: true,
+                    icon: '📚',
+                    nodeType: 'type-category',
+                    customFields: [
+                        { id: 'kb-cf1', name: '説明', value: 'フロントエンド技術に関する学習リソース', type: 'textarea' },
+                        { id: 'kb-cf2', name: 'タグ', value: 'React, Vue, JavaScript, CSS', type: 'text' },
+                    ],
+                    children: [
+                        {
+                            id: 'kb3',
+                            name: 'React.js',
+                            isExpanded: true,
+                            icon: '📚',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'kb-cf3', name: '説明', value: 'React.jsフレームワークに関する情報', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'kb4',
+                                    name: 'React基礎講座',
+                                    icon: '🎬',
+                                    nodeType: 'type-video-tutorial',
+                                    customFields: [
+                                        { id: 'kb-cf4', name: 'タイトル', value: 'React基礎講座 - コンポーネントの作り方', type: 'text' },
+                                        { id: 'kb-cf5', name: '説明', value: 'Reactの基本的なコンポーネントの作成方法を解説します', type: 'textarea' },
+                                        { id: 'kb-cf6', name: 'YouTube動画', value: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', type: 'youtube' },
+                                        { id: 'kb-cf7', name: '再生時間', value: '15:30', type: 'text' },
+                                        { id: 'kb-cf8', name: '難易度', value: '初級', type: 'text' },
+                                    ],
+                                    children: [],
+                                },
+                                {
+                                    id: 'kb5',
+                                    name: 'React Hooks完全ガイド',
+                                    icon: '📝',
+                                    nodeType: 'type-article',
+                                    customFields: [
+                                        { id: 'kb-cf9', name: '概要', value: 'React Hooksの使い方を詳しく解説した記事です', type: 'textarea' },
+                                        { id: 'kb-cf10', name: '本文', value: 'useState、useEffect、useContextなどの基本的なHooksから、カスタムHooksの作成方法まで網羅的に解説...', type: 'textarea' },
+                                        { id: 'kb-cf11', name: '著者', value: '山田太郎', type: 'text' },
+                                        { id: 'kb-cf12', name: '更新日', value: '2024-01-15', type: 'text' },
+                                    ],
+                                    children: [
+                                        {
+                                            id: 'kb6',
+                                            name: 'useStateの使い方',
+                                            icon: '💻',
+                                            nodeType: 'type-code-snippet',
+                                            customFields: [
+                                                { id: 'kb-cf13', name: 'タイトル', value: 'useStateの基本的な使い方', type: 'text' },
+                                                { id: 'kb-cf14', name: '言語', value: 'JavaScript', type: 'text' },
+                                                { id: 'kb-cf15', name: 'コード', value: 'const [count, setCount] = useState(0);\n\nconst increment = () => {\n  setCount(count + 1);\n};', type: 'textarea' },
+                                                { id: 'kb-cf16', name: '説明', value: '状態管理の基本となるuseStateフックの使い方', type: 'textarea' },
+                                            ],
+                                            children: [],
+                                        },
+                                    ],
+                                },
+                                {
+                                    id: 'kb7',
+                                    name: 'Reactパフォーマンス最適化',
+                                    icon: '📊',
+                                    nodeType: 'type-diagram',
+                                    customFields: [
+                                        { id: 'kb-cf17', name: 'タイトル', value: 'Reactレンダリング最適化フロー', type: 'text' },
+                                        { id: 'kb-cf18', name: '画像', value: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800', type: 'image' },
+                                        { id: 'kb-cf19', name: '説明', value: 'React.memo、useMemo、useCallbackを使った最適化の流れを図解', type: 'textarea' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                        {
+                            id: 'kb8',
+                            name: 'CSS設計',
+                            isExpanded: true,
+                            icon: '📚',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'kb-cf20', name: '説明', value: 'モダンなCSS設計手法とツール', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'kb9',
+                                    name: 'CSS設計の基本原則',
+                                    icon: '🎙️',
+                                    nodeType: 'type-podcast',
+                                    customFields: [
+                                        { id: 'kb-cf21', name: 'タイトル', value: 'エンジニアトーク #23 - CSS設計について語る', type: 'text' },
+                                        { id: 'kb-cf22', name: '説明', value: 'BEM、OOCSS、SMACSSなどのCSS設計手法について議論', type: 'textarea' },
+                                        { id: 'kb-cf23', name: '音声ファイル', value: 'https://example.com/podcast/episode23.mp3', type: 'audio' },
+                                        { id: 'kb-cf24', name: 'ゲスト', value: '田中花子（フロントエンドエンジニア）', type: 'text' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    id: 'kb10',
+                    name: 'バックエンド開発',
+                    isExpanded: true,
+                    icon: '📚',
+                    nodeType: 'type-category',
+                    customFields: [
+                        { id: 'kb-cf25', name: '説明', value: 'サーバーサイド開発に関する技術情報', type: 'textarea' },
+                        { id: 'kb-cf26', name: 'タグ', value: 'Node.js, Python, Database, API', type: 'text' },
+                    ],
+                    children: [
+                        {
+                            id: 'kb11',
+                            name: 'Node.js',
+                            isExpanded: true,
+                            icon: '📚',
+                            nodeType: 'type-category',
+                            children: [
+                                {
+                                    id: 'kb12',
+                                    name: 'Express.js入門',
+                                    icon: '🎬',
+                                    nodeType: 'type-video-tutorial',
+                                    customFields: [
+                                        { id: 'kb-cf27', name: 'タイトル', value: 'Express.jsで作るREST API', type: 'text' },
+                                        { id: 'kb-cf28', name: '説明', value: 'Express.jsを使ったRESTful APIの構築方法', type: 'textarea' },
+                                        { id: 'kb-cf29', name: 'YouTube動画', value: 'https://www.youtube.com/watch?v=L72fhGm1tfE', type: 'youtube' },
+                                        { id: 'kb-cf30', name: '再生時間', value: '45:00', type: 'text' },
+                                        { id: 'kb-cf31', name: '難易度', value: '中級', type: 'text' },
+                                    ],
+                                    children: [],
+                                },
+                                {
+                                    id: 'kb13',
+                                    name: '非同期処理パターン',
+                                    icon: '💻',
+                                    nodeType: 'type-code-snippet',
+                                    customFields: [
+                                        { id: 'kb-cf32', name: 'タイトル', value: 'async/awaitパターン集', type: 'text' },
+                                        { id: 'kb-cf33', name: '言語', value: 'JavaScript', type: 'text' },
+                                        { id: 'kb-cf34', name: 'コード', value: 'async function fetchUserData(userId) {\n  try {\n    const user = await User.findById(userId);\n    const posts = await Post.find({ userId: user.id });\n    return { user, posts };\n  } catch (error) {\n    console.error("Error:", error);\n    throw error;\n  }\n}', type: 'textarea' },
+                                        { id: 'kb-cf35', name: '説明', value: 'Node.jsでの非同期処理の実装パターン', type: 'textarea' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                        {
+                            id: 'kb14',
+                            name: 'データベース設計',
+                            icon: '📚',
+                            nodeType: 'type-category',
+                            children: [
+                                {
+                                    id: 'kb15',
+                                    name: 'データベース設計の極意',
+                                    icon: '📖',
+                                    nodeType: 'type-book-reference',
+                                    customFields: [
+                                        { id: 'kb-cf36', name: '書名', value: 'データベース設計の極意', type: 'text' },
+                                        { id: 'kb-cf37', name: '著者', value: '佐藤健一', type: 'text' },
+                                        { id: 'kb-cf38', name: 'ISBN', value: '978-4-123456-78-9', type: 'text' },
+                                        { id: 'kb-cf39', name: '表紙画像', value: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400', type: 'image' },
+                                        { id: 'kb-cf40', name: 'レビュー', value: 'RDBMSの基礎から応用まで、実践的な設計手法を学べる良書', type: 'textarea' },
+                                        { id: 'kb-cf41', name: '購入リンク', value: 'https://example.com/books/db-design', type: 'link' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    id: 'kb16',
+                    name: 'DevOps・インフラ',
+                    icon: '📚',
+                    nodeType: 'type-category',
+                    customFields: [
+                        { id: 'kb-cf42', name: '説明', value: 'CI/CD、コンテナ、クラウドインフラに関する情報', type: 'textarea' },
+                    ],
+                    children: [
+                        {
+                            id: 'kb17',
+                            name: 'Docker',
+                            icon: '📚',
+                            nodeType: 'type-category',
+                            children: [
+                                {
+                                    id: 'kb18',
+                                    name: 'Dockerアーキテクチャ図解',
+                                    icon: '📊',
+                                    nodeType: 'type-diagram',
+                                    customFields: [
+                                        { id: 'kb-cf43', name: 'タイトル', value: 'Dockerコンテナのライフサイクル', type: 'text' },
+                                        { id: 'kb-cf44', name: '画像', value: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800', type: 'image' },
+                                        { id: 'kb-cf45', name: '説明', value: 'コンテナの作成から削除までのライフサイクルを図解', type: 'textarea' },
+                                        { id: 'kb-cf46', name: 'データソース', value: 'Docker公式ドキュメント', type: 'text' },
+                                    ],
+                                    children: [],
+                                },
+                                {
+                                    id: 'kb19',
+                                    name: 'docker-compose実践',
+                                    icon: '💻',
+                                    nodeType: 'type-code-snippet',
+                                    customFields: [
+                                        { id: 'kb-cf47', name: 'タイトル', value: 'マルチコンテナアプリケーションの構成', type: 'text' },
+                                        { id: 'kb-cf48', name: '言語', value: 'YAML', type: 'text' },
+                                        { id: 'kb-cf49', name: 'コード', value: 'version: "3.8"\nservices:\n  web:\n    build: .\n    ports:\n      - "3000:3000"\n    depends_on:\n      - db\n  db:\n    image: postgres:14\n    environment:\n      POSTGRES_PASSWORD: example', type: 'textarea' },
+                                        { id: 'kb-cf50', name: 'タグ', value: 'docker, compose, container', type: 'text' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+};
+
+// 料理レシピサンプル（階層的な料理カテゴリと多様なメディア）
+export const recipeSample: SampleData = {
+    id: 'recipe',
+    name: '料理レシピ集',
+    description: '画像や動画を含む料理レシピの階層的なコレクション',
+    treeTitle: '世界の料理レシピ集',
+    nodeTypes: [
+        {
+            id: 'type-cuisine',
+            name: '料理ジャンル',
+            icon: '🌍',
+            fieldDefinitions: [
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-origin', name: '発祥地', type: 'text', required: false },
+            ],
+        },
+        {
+            id: 'type-category',
+            name: 'カテゴリー',
+            icon: '🍽️',
+            fieldDefinitions: [
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+            ],
+        },
+        {
+            id: 'type-recipe',
+            name: 'レシピ',
+            icon: '📖',
+            fieldDefinitions: [
+                { id: 'field-difficulty', name: '難易度', type: 'text', required: true },
+                { id: 'field-time', name: '調理時間', type: 'text', required: true },
+                { id: 'field-servings', name: '人数', type: 'text', required: false },
+                { id: 'field-ingredients', name: '材料', type: 'textarea', required: true },
+                { id: 'field-steps', name: '手順', type: 'textarea', required: true },
+                { id: 'field-image', name: '完成写真', type: 'image', required: false },
+                { id: 'field-video', name: '調理動画', type: 'youtube', required: false },
+            ],
+        },
+        {
+            id: 'type-technique',
+            name: '調理技法',
+            icon: '👨‍🍳',
+            fieldDefinitions: [
+                { id: 'field-desc', name: '説明', type: 'textarea', required: true },
+                { id: 'field-video', name: '解説動画', type: 'youtube', required: false },
+                { id: 'field-tips', name: 'コツ・ポイント', type: 'textarea', required: false },
+            ],
+        },
+        {
+            id: 'type-ingredient',
+            name: '食材',
+            icon: '🥬',
+            fieldDefinitions: [
+                { id: 'field-desc', name: '説明', type: 'textarea', required: false },
+                { id: 'field-season', name: '旬の時期', type: 'text', required: false },
+                { id: 'field-nutrition', name: '栄養価', type: 'textarea', required: false },
+                { id: 'field-image', name: '画像', type: 'image', required: false },
+                { id: 'field-selection', name: '選び方', type: 'textarea', required: false },
+            ],
+        },
+        {
+            id: 'type-chef-voice',
+            name: 'シェフの声',
+            icon: '🎙️',
+            fieldDefinitions: [
+                { id: 'field-chef', name: 'シェフ名', type: 'text', required: true },
+                { id: 'field-restaurant', name: 'レストラン', type: 'text', required: false },
+                { id: 'field-audio', name: '音声メッセージ', type: 'audio', required: true },
+                { id: 'field-tips', name: 'アドバイス', type: 'textarea', required: false },
+            ],
+        },
+    ],
+    tree: [
+        {
+            id: 'rc1',
+            name: '世界の料理',
+            isExpanded: true,
+            icon: '🌍',
+            children: [
+                {
+                    id: 'rc2',
+                    name: '日本料理',
+                    isExpanded: true,
+                    icon: '🌍',
+                    nodeType: 'type-cuisine',
+                    customFields: [
+                        { id: 'rc-cf1', name: '説明', value: '四季の素材を活かした繊細な調理法が特徴', type: 'textarea' },
+                        { id: 'rc-cf2', name: '発祥地', value: '日本', type: 'text' },
+                    ],
+                    children: [
+                        {
+                            id: 'rc3',
+                            name: '寿司',
+                            isExpanded: true,
+                            icon: '🍽️',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'rc-cf3', name: '説明', value: '酢飯と魚介類を組み合わせた日本の伝統料理', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'rc4',
+                                    name: '握り寿司の基本',
+                                    icon: '📖',
+                                    nodeType: 'type-recipe',
+                                    customFields: [
+                                        { id: 'rc-cf4', name: '難易度', value: '上級', type: 'text' },
+                                        { id: 'rc-cf5', name: '調理時間', value: '60分', type: 'text' },
+                                        { id: 'rc-cf6', name: '人数', value: '4人分', type: 'text' },
+                                        { id: 'rc-cf7', name: '材料', value: '米2合、米酢50ml、砂糖大さじ2、塩小さじ1、マグロ200g、サーモン200g、エビ8尾', type: 'textarea' },
+                                        { id: 'rc-cf8', name: '手順', value: '1. 酢飯を作る\n2. ネタを切る\n3. 握る', type: 'textarea' },
+                                        { id: 'rc-cf9', name: '完成写真', value: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800', type: 'image' },
+                                        { id: 'rc-cf10', name: '調理動画', value: 'https://www.youtube.com/watch?v=bTqVqk5R0mc', type: 'youtube' },
+                                    ],
+                                    children: [
+                                        {
+                                            id: 'rc5',
+                                            name: 'シャリの握り方',
+                                            icon: '👨‍🍳',
+                                            nodeType: 'type-technique',
+                                            customFields: [
+                                                { id: 'rc-cf11', name: '説明', value: '寿司の基本となるシャリの握り方を解説', type: 'textarea' },
+                                                { id: 'rc-cf12', name: '解説動画', value: 'https://www.youtube.com/watch?v=Uu5zGHjRaMo', type: 'youtube' },
+                                                { id: 'rc-cf13', name: 'コツ・ポイント', value: '手水をつけすぎない、握りすぎない', type: 'textarea' },
+                                            ],
+                                            children: [],
+                                        },
+                                        {
+                                            id: 'rc6',
+                                            name: '職人のアドバイス',
+                                            icon: '🎙️',
+                                            nodeType: 'type-chef-voice',
+                                            customFields: [
+                                                { id: 'rc-cf14', name: 'シェフ名', value: '鈴木一郎', type: 'text' },
+                                                { id: 'rc-cf15', name: 'レストラン', value: '銀座寿司処', type: 'text' },
+                                                { id: 'rc-cf16', name: '音声メッセージ', value: 'https://example.com/audio/sushi-tips.mp3', type: 'audio' },
+                                                { id: 'rc-cf17', name: 'アドバイス', value: 'ネタの温度管理が最も重要です', type: 'textarea' },
+                                            ],
+                                            children: [],
+                                        },
+                                    ],
+                                },
+                                {
+                                    id: 'rc7',
+                                    name: 'マグロ',
+                                    icon: '🥬',
+                                    nodeType: 'type-ingredient',
+                                    customFields: [
+                                        { id: 'rc-cf18', name: '説明', value: '寿司ネタの王様とも呼ばれる高級魚', type: 'textarea' },
+                                        { id: 'rc-cf19', name: '旬の時期', value: '12月〜2月', type: 'text' },
+                                        { id: 'rc-cf20', name: '栄養価', value: 'DHA、EPA、タンパク質が豊富', type: 'textarea' },
+                                        { id: 'rc-cf21', name: '画像', value: 'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=400', type: 'image' },
+                                        { id: 'rc-cf22', name: '選び方', value: '色が鮮やかで、脂の乗りが良いものを選ぶ', type: 'textarea' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                        {
+                            id: 'rc8',
+                            name: 'ラーメン',
+                            isExpanded: true,
+                            icon: '🍽️',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'rc-cf23', name: '説明', value: '日本で独自に発展した麺料理', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'rc9',
+                                    name: '豚骨ラーメン',
+                                    icon: '📖',
+                                    nodeType: 'type-recipe',
+                                    customFields: [
+                                        { id: 'rc-cf24', name: '難易度', value: '中級', type: 'text' },
+                                        { id: 'rc-cf25', name: '調理時間', value: '8時間（スープ込み）', type: 'text' },
+                                        { id: 'rc-cf26', name: '材料', value: '豚骨2kg、にんにく1玉、生姜50g、ネギ2本、中華麺4玉', type: 'textarea' },
+                                        { id: 'rc-cf27', name: '手順', value: '1. 豚骨を下茹でする\n2. 8時間煮込む\n3. 麺を茹でて盛り付ける', type: 'textarea' },
+                                        { id: 'rc-cf28', name: '完成写真', value: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800', type: 'image' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    id: 'rc10',
+                    name: 'イタリア料理',
+                    isExpanded: true,
+                    icon: '🌍',
+                    nodeType: 'type-cuisine',
+                    customFields: [
+                        { id: 'rc-cf29', name: '説明', value: '地域ごとに特色のある多様な料理文化', type: 'textarea' },
+                        { id: 'rc-cf30', name: '発祥地', value: 'イタリア', type: 'text' },
+                    ],
+                    children: [
+                        {
+                            id: 'rc11',
+                            name: 'パスタ',
+                            isExpanded: true,
+                            icon: '🍽️',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'rc-cf31', name: '説明', value: '様々な形状と調理法を持つイタリアの主食', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'rc12',
+                                    name: 'カルボナーラ',
+                                    icon: '📖',
+                                    nodeType: 'type-recipe',
+                                    customFields: [
+                                        { id: 'rc-cf32', name: '難易度', value: '初級', type: 'text' },
+                                        { id: 'rc-cf33', name: '調理時間', value: '20分', type: 'text' },
+                                        { id: 'rc-cf34', name: '人数', value: '2人分', type: 'text' },
+                                        { id: 'rc-cf35', name: '材料', value: 'スパゲッティ200g、卵2個、パルメザンチーズ50g、ベーコン100g、黒胡椒', type: 'textarea' },
+                                        { id: 'rc-cf36', name: '手順', value: '1. ベーコンを炒める\n2. 卵とチーズを混ぜる\n3. 茹でたパスタと和える', type: 'textarea' },
+                                        { id: 'rc-cf37', name: '完成写真', value: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800', type: 'image' },
+                                        { id: 'rc-cf38', name: '調理動画', value: 'https://www.youtube.com/watch?v=3AAdKl1UYZs', type: 'youtube' },
+                                    ],
+                                    children: [],
+                                },
+                                {
+                                    id: 'rc13',
+                                    name: 'アマトリチャーナ',
+                                    icon: '📖',
+                                    nodeType: 'type-recipe',
+                                    customFields: [
+                                        { id: 'rc-cf39', name: '難易度', value: '初級', type: 'text' },
+                                        { id: 'rc-cf40', name: '調理時間', value: '30分', type: 'text' },
+                                        { id: 'rc-cf41', name: '材料', value: 'スパゲッティ200g、トマト缶1缶、グアンチャーレ100g、ペコリーノチーズ', type: 'textarea' },
+                                        { id: 'rc-cf42', name: '手順', value: '1. グアンチャーレを炒める\n2. トマトソースを作る\n3. パスタと和える', type: 'textarea' },
+                                        { id: 'rc-cf43', name: '完成写真', value: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800', type: 'image' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                        {
+                            id: 'rc14',
+                            name: 'ピザ',
+                            icon: '🍽️',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'rc-cf44', name: '説明', value: 'ナポリ発祥の世界的に人気の料理', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'rc15',
+                                    name: 'マルゲリータ',
+                                    icon: '📖',
+                                    nodeType: 'type-recipe',
+                                    customFields: [
+                                        { id: 'rc-cf45', name: '難易度', value: '中級', type: 'text' },
+                                        { id: 'rc-cf46', name: '調理時間', value: '2時間（発酵込み）', type: 'text' },
+                                        { id: 'rc-cf47', name: '材料', value: '強力粉300g、水180ml、塩、イースト、トマトソース、モッツァレラ、バジル', type: 'textarea' },
+                                        { id: 'rc-cf48', name: '完成写真', value: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800', type: 'image' },
+                                    ],
+                                    children: [
+                                        {
+                                            id: 'rc16',
+                                            name: '生地の伸ばし方',
+                                            icon: '👨‍🍳',
+                                            nodeType: 'type-technique',
+                                            customFields: [
+                                                { id: 'rc-cf49', name: '説明', value: 'ナポリピッツァの伝統的な生地の伸ばし方', type: 'textarea' },
+                                                { id: 'rc-cf50', name: '解説動画', value: 'https://www.youtube.com/watch?v=lzAk5wAImFQ', type: 'youtube' },
+                                                { id: 'rc-cf51', name: 'コツ・ポイント', value: '中心から外側へ、空気を逃がさないように', type: 'textarea' },
+                                            ],
+                                            children: [],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    id: 'rc17',
+                    name: 'フランス料理',
+                    icon: '🌍',
+                    nodeType: 'type-cuisine',
+                    customFields: [
+                        { id: 'rc-cf52', name: '説明', value: '洗練された技法と豊かな食材を使った高級料理', type: 'textarea' },
+                        { id: 'rc-cf53', name: '発祥地', value: 'フランス', type: 'text' },
+                    ],
+                    children: [
+                        {
+                            id: 'rc18',
+                            name: 'デザート',
+                            icon: '🍽️',
+                            nodeType: 'type-category',
+                            customFields: [
+                                { id: 'rc-cf54', name: '説明', value: 'フランスの伝統的なお菓子とデザート', type: 'textarea' },
+                            ],
+                            children: [
+                                {
+                                    id: 'rc19',
+                                    name: 'クレームブリュレ',
+                                    icon: '📖',
+                                    nodeType: 'type-recipe',
+                                    customFields: [
+                                        { id: 'rc-cf55', name: '難易度', value: '中級', type: 'text' },
+                                        { id: 'rc-cf56', name: '調理時間', value: '3時間（冷却込み）', type: 'text' },
+                                        { id: 'rc-cf57', name: '材料', value: '生クリーム300ml、卵黄4個、砂糖50g、バニラビーンズ1本', type: 'textarea' },
+                                        { id: 'rc-cf58', name: '手順', value: '1. カスタードを作る\n2. 湯煎焼きする\n3. 冷やして砂糖をキャラメリゼ', type: 'textarea' },
+                                        { id: 'rc-cf59', name: '完成写真', value: 'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?w=800', type: 'image' },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+};
+
 // 全サンプルデータの配列
-export const allSamples: SampleData[] = [organizationSample, rockBandsSample, tokugawaSample, companySample];
+export const allSamples: SampleData[] = [organizationSample, rockBandsSample, tokugawaSample, companySample, knowledgeSample, recipeSample];
 
 // サンプルIDからサンプルデータを取得する関数
 export function getSampleById(id: SampleType): SampleData | undefined {

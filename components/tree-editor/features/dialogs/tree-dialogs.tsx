@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/utils/i18n/i18n-context';
-import { TreeNode, NodeType } from '@/components/tree-editor/types';
-import { getSampleById, allSamples, SampleType } from '@/components/tree-editor/features/sample-selector/sample-data';
+import { allSamples, SampleType } from '@/components/tree-editor/features/sample-selector/sample-data';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -89,7 +88,7 @@ type SampleSelectorDialogProps = {
     onOpenChange: (open: boolean) => void;
     currentSampleId: SampleType;
     setCurrentSampleId: (id: SampleType) => void;
-    handleSelectSample: (id: SampleType) => void;
+    handleSelectSample: (id: SampleType) => Promise<void>;
 };
 
 export function SampleSelectorDialog({
@@ -137,8 +136,8 @@ export function SampleSelectorDialog({
                         {t('common.cancel')}
                     </Button>
                     <Button
-                        onClick={() => {
-                            handleSelectSample(currentSampleId);
+                        onClick={async () => {
+                            await handleSelectSample(currentSampleId);
                             onOpenChange(false);
                         }}
                     >

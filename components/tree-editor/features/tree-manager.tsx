@@ -90,10 +90,10 @@ export function TreeManager({
     }
   };
 
-  // Load trees when storage type changes
+  // Load trees when storage type changes or active tree changes
   useEffect(() => {
     loadTrees();
-  }, [storageType]);
+  }, [storageType, activeTreeId]);
 
   // Switch tree
   const handleSwitchTree = async (treeId: string) => {
