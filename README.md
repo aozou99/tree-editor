@@ -1,4 +1,4 @@
-# Tree Editor Next
+# Tree Editor
 
 階層構造データを視覚的に編集・管理するための高機能 Web アプリケーション
 
